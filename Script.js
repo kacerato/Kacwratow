@@ -117,6 +117,58 @@ async function renderClips() {
     });
 }
 
+// Função para buscar os últimos VODs
+async function getVods(userId) {
+    try {
+        const vodsApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive&first=3`;
+        const response = await fetch(vodsApi, {
+            headers: {
+                "Client-ID": clientId,
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        const data = await response.json();
+        return data.data || [];
+    } catch (error) {
+        console.error("Erro ao buscar VODs:", error);
+        return [];
+    }
+}
+
+// Função para renderizar os VODs no DOM
+async function renderVods() {
+    const userId = await getUserId();
+    if (!userId) return;
+
+    const vods = await getVods(userId);
+
+    const vodsContainer = document.getElementById("vods-container");
+    vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
+
+    if (vods.length === 0) {
+        vodsContainer.textContent = "Nenhuma live encontrada.";
+        return;
+    }
+
+    vods.forEach((vod) => {
+        const vodElement = document.createElement("div");
+        vodElement.classList.add("vod");
+
+        vodElement.innerHTML = `
+            <iframe 
+                src="https://player.twitch.tv/?video=${vod.id}&parent=localhost&parent=brkk.netlify.app" 
+                frameborder="0" 
+                allowfullscreen>
+            </iframe>
+            <div class="vod-title">${vod.title}</div>
+        `;
+
+        vodsContainer.appendChild(vodElement);
+    });
+}
+
+
 // Função para atualizar o status
 async function updateStatus() {
     try {
@@ -154,27 +206,47 @@ async function updateStatus() {
 function setupTabs() {
     const statusTab = document.getElementById("status-tab");
     const clipsTab = document.getElementById("clips-tab");
+    const vodsTab = document.getElementById("vods-tab"); // Nova aba
     const statusSection = document.getElementById("status-section");
     const clipsSection = document.getElementById("clips-section");
+    const vodsSection = document.getElementById("vods-section"); // Nova seção
 
     statusTab.addEventListener("click", () => {
         statusTab.classList.add("active");
         clipsTab.classList.remove("active");
+        vodsTab.classList.remove("active"); // Remove ativo da nova aba
         statusSection.classList.remove("hidden");
         clipsSection.classList.add("hidden");
+        vodsSection.classList.add("hidden"); // Esconde a nova seção
     });
 
     clipsTab.addEventListener("click", () => {
         clipsTab.classList.add("active");
         statusTab.classList.remove("active");
+        vodsTab.classList.remove("active"); // Remove ativo da nova aba
         clipsSection.classList.remove("hidden");
         statusSection.classList.add("hidden");
+        vodsSection.classList.add("hidden"); // Esconde a nova seção
 
         // Carrega os clipes ao clicar na aba
         renderClips();
     });
+
+    vodsTab.addEventListener("click", () => {
+        vodsTab.classList.add("active");
+        statusTab.classList.remove("active");
+        clipsTab.classList.remove("active");
+        vodsSection.classList.remove("hidden");
+        statusSection.classList.add("hidden");
+        clipsSection.classList.add("hidden");
+
+        // Carrega as lives ao clicar na aba
+        renderVods();
+    });
 }
+
 
 // Inicializa as abas e o status
 setupTabs();
 updateStatus();
+                                 
