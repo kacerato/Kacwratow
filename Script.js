@@ -184,23 +184,31 @@ async function updateStatus() {
             });
 
             const streamData = await streamResponse.json();
+            const statusMessage = document.getElementById("status-message");
+            const daysCounter = document.querySelector(".days-counter");
+
             if (streamData && streamData.data && streamData.data.length > 0) {
-                document.querySelector(".status-container p").textContent =
-                    "O tucano está AO VIVO agora!";
-                document.querySelector(".days-counter").style.display = "none";
+                // Se o canal está ao vivo
+                statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
+                statusMessage.classList.add("live-status"); // Adiciona animação
+                daysCounter.style.display = "none"; // Esconde o contador de dias
             } else {
                 // O canal está offline
                 const lastStreamDate = await getLastStreamDate(userId);
                 if (lastStreamDate) {
                     const daysOffline = calculateDaysDifference(lastStreamDate);
+                    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
+                    daysCounter.style.display = "flex"; // Mostra o contador de dias
                     document.getElementById("days-offline").textContent = daysOffline;
                 }
+                statusMessage.classList.remove("live-status"); // Remove animação
             }
         }
     } catch (error) {
         console.error("Erro ao atualizar o status:", error);
     }
 }
+
 
 // Alternância entre abas
 function setupTabs() {
@@ -249,4 +257,4 @@ function setupTabs() {
 // Inicializa as abas e o status
 setupTabs();
 updateStatus();
-                                 
+    
