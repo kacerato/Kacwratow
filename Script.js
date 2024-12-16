@@ -1,262 +1,260 @@
-/* Reset básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+// Configurações da API da Twitch
+const clientId = "v2h2uedgpuw2fz35wtn942e9vsf2c9"; // Substitua pela sua Client ID
+const accessToken = "st6jpeqk6jidreb6cnlw08zn5fwjbk"; // Substitua pelo seu Access Token
+const username = "brkk"; // Nome de usuário do canal do BRKK na Twitch
 
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #18181b;
-    color: #f4f4f5;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    justify-content: space-between;
-    align-items: center;
-}
+// URLs da API
+const twitchUserApi = `https://api.twitch.tv/helix/users?login=${username}`;
+const twitchStreamApi = `https://api.twitch.tv/helix/streams?user_login=${username}`;
+let twitchVideosApi;
+let twitchClipsApi;
 
-header {
-    background-color: #9146ff;
-    width: 100%;
-    padding: 1rem 0;
-    text-align: center;
-    color: white;
-}
+// Função para obter o ID do usuário
+async function getUserId() {
+    try {
+        const response = await fetch(twitchUserApi, {
+            headers: {
+                "Client-ID": clientId,
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
 
-.logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-.twitch-logo {
-    height: 40px;
-    width: auto;
-}
-
-h1 {
-    font-size: 2rem;
-    font-weight: bold;
-}
-
-main {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
-}
-
-.status-container {
-    background-color: #292b2f;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.status-container p {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-}
-
-.days-counter {
-    font-size: 2.5rem;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-}
-
-footer {
-    background-color: #9146ff;
-    width: 100%;
-    text-align: center;
-    padding: 1rem 0;
-    color: white;
-}
-
-/* Estilo do menu de navegação */
-nav {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-    gap: 10px;
-}
-
-nav button {
-    background-color: #9146ff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-nav button:hover {
-    background-color: #772ce8;
-}
-
-nav button.active {
-    background-color: #5a14b2;
-}
-
-/* Esconde as abas inativas */
-.tab-content.hidden {
-    display: none;
-}
-
-/* Estilo dos clipes */
-#clips-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.clip {
-    background-color: #292b2f;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 300px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.clip iframe {
-    width: 100%;
-    height: 200px;
-    border: none;
-}
-
-.clip-title {
-    padding: 10px;
-    font-size: 1rem;
-    color: #f4f4f5;
-    text-align: center;
-}
-/* Estilo do menu de navegação */
-nav {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-    gap: 10px;
-}
-
-nav button {
-    background-color: #9146ff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-nav button:hover {
-    background-color: #772ce8;
-}
-
-nav button.active {
-    background-color: #5a14b2;
-}
-
-/* Esconde as abas inativas */
-.tab-content.hidden {
-    display: none;
-}
-
-/* Estilo dos clipes */
-#clips-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.clip {
-    background-color: #292b2f;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 300px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.clip iframe {
-    width: 100%;
-    height: 200px;
-    border: none;
-}
-
-.clip-title {
-    padding: 10px;
-    font-size: 1rem;
-    color: #f4f4f5;
-    text-align: center;
-}
-/* Container das últimas lives */
-#vods-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.vod {
-    background-color: #292b2f;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 300px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.vod iframe {
-    width: 100%;
-    height: 200px;
-    border: none;
-}
-
-.vod-title {
-    padding: 10px;
-    font-size: 1rem;
-    color: #f4f4f5;
-    text-align: center;
-}
-/* Animação de pulsação */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 10px rgba(145, 70, 255, 0.9);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(145, 70, 255, 1);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 10px rgba(145, 70, 255, 0.9);
+        const data = await response.json();
+        if (data && data.data && data.data.length > 0) {
+            return data.data[0].id;
+        } else {
+            console.error("Usuário não encontrado.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Erro ao buscar ID do usuário:", error);
+        return null;
     }
 }
 
-/* Estilo para o status ao vivo */
-.live-status {
-    background-color: #ff0000;
-    color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    animation: pulse 1s infinite;
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.9);
-    transition: all 0.3s ease-in-out;
+// Função para buscar a última transmissão salva
+async function getLastStreamDate(userId) {
+    try {
+        twitchVideosApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive`;
+        const response = await fetch(twitchVideosApi, {
+            headers: {
+                "Client-ID": clientId,
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        const data = await response.json();
+        if (data && data.data && data.data.length > 0) {
+            return new Date(data.data[0].created_at);
+        } else {
+            console.error("Nenhum vídeo de transmissão encontrado.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Erro ao buscar última data de transmissão:", error);
+        return null;
+    }
 }
+
+// Função para calcular a diferença em dias
+function calculateDaysDifference(lastStreamDate) {
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate - lastStreamDate);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte para dias
+}
+
+// Função para buscar os clipes recentes
+async function getClips(userId) {
+    try {
+        const now = new Date();
+        const lastWeek = new Date(now.setDate(now.getDate() - 7)).toISOString(); // Últimos 7 dias
+        twitchClipsApi = `https://api.twitch.tv/helix/clips?broadcaster_id=${userId}&first=10&started_at=${lastWeek}`;
+
+        const response = await fetch(twitchClipsApi, {
+            headers: {
+                "Client-ID": clientId,
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        const data = await response.json();
+        return data.data || [];
+    } catch (error) {
+        console.error("Erro ao buscar clipes:", error);
+        return [];
+    }
+}
+
+// Função para renderizar os clipes no DOM
+async function renderClips() {
+    const userId = await getUserId();
+    if (!userId) return;
+
+    const clips = await getClips(userId);
+
+    const clipsContainer = document.getElementById("clips-container");
+    clipsContainer.innerHTML = ""; // Limpa o conteúdo anterior
+
+    if (clips.length === 0) {
+        clipsContainer.textContent = "Nenhum clipe encontrado.";
+        return;
+    }
+
+    clips.forEach((clip) => {
+        const clipElement = document.createElement("div");
+        clipElement.classList.add("clip");
+
+        clipElement.innerHTML = `
+            <iframe 
+                src="${clip.embed_url}&parent=localhost&parent=brkk.netlify.app" 
+                frameborder="0" 
+                allowfullscreen>
+            </iframe>
+            <div class="clip-title">${clip.title}</div>
+        `;
+
+        clipsContainer.appendChild(clipElement);
+    });
+}
+
+// Função para buscar os últimos VODs
+async function getVods(userId) {
+    try {
+        const vodsApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive&first=3`;
+        const response = await fetch(vodsApi, {
+            headers: {
+                "Client-ID": clientId,
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        const data = await response.json();
+        return data.data || [];
+    } catch (error) {
+        console.error("Erro ao buscar VODs:", error);
+        return [];
+    }
+}
+
+// Função para renderizar os VODs no DOM
+async function renderVods() {
+    const userId = await getUserId();
+    if (!userId) return;
+
+    const vods = await getVods(userId);
+
+    const vodsContainer = document.getElementById("vods-container");
+    vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
+
+    if (vods.length === 0) {
+        vodsContainer.textContent = "Nenhuma live encontrada.";
+        return;
+    }
+
+    vods.forEach((vod) => {
+        const vodElement = document.createElement("div");
+        vodElement.classList.add("vod");
+
+        vodElement.innerHTML = `
+            <iframe 
+                src="https://player.twitch.tv/?video=${vod.id}&parent=localhost&parent=brkk.netlify.app" 
+                frameborder="0" 
+                allowfullscreen>
+            </iframe>
+            <div class="vod-title">${vod.title}</div>
+        `;
+
+        vodsContainer.appendChild(vodElement);
+    });
+}
+
+
+// Função para atualizar o status
+async function updateStatus() {
+    try {
+        const userId = await getUserId();
+
+        if (userId) {
+            // Verifica se o canal está ao vivo
+            const streamResponse = await fetch(twitchStreamApi, {
+                headers: {
+                    "Client-ID": clientId,
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+
+            const streamData = await streamResponse.json();
+            const statusMessage = document.getElementById("status-message");
+            const daysCounter = document.querySelector(".days-counter");
+
+            if (streamData && streamData.data && streamData.data.length > 0) {
+                // Se o canal está ao vivo
+                statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
+                statusMessage.classList.add("live-status"); // Adiciona animação
+                daysCounter.style.display = "none"; // Esconde o contador de dias
+            } else {
+                // O canal está offline
+                const lastStreamDate = await getLastStreamDate(userId);
+                if (lastStreamDate) {
+                    const daysOffline = calculateDaysDifference(lastStreamDate);
+                    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
+                    daysCounter.style.display = "flex"; // Mostra o contador de dias
+                    document.getElementById("days-offline").textContent = daysOffline;
+                }
+                statusMessage.classList.remove("live-status"); // Remove animação
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar o status:", error);
+    }
+}
+
+
+// Alternância entre abas
+function setupTabs() {
+    const statusTab = document.getElementById("status-tab");
+    const clipsTab = document.getElementById("clips-tab");
+    const vodsTab = document.getElementById("vods-tab"); // Nova aba
+    const statusSection = document.getElementById("status-section");
+    const clipsSection = document.getElementById("clips-section");
+    const vodsSection = document.getElementById("vods-section"); // Nova seção
+
+    statusTab.addEventListener("click", () => {
+        statusTab.classList.add("active");
+        clipsTab.classList.remove("active");
+        vodsTab.classList.remove("active"); // Remove ativo da nova aba
+        statusSection.classList.remove("hidden");
+        clipsSection.classList.add("hidden");
+        vodsSection.classList.add("hidden"); // Esconde a nova seção
+    });
+
+    clipsTab.addEventListener("click", () => {
+        clipsTab.classList.add("active");
+        statusTab.classList.remove("active");
+        vodsTab.classList.remove("active"); // Remove ativo da nova aba
+        clipsSection.classList.remove("hidden");
+        statusSection.classList.add("hidden");
+        vodsSection.classList.add("hidden"); // Esconde a nova seção
+
+        // Carrega os clipes ao clicar na aba
+        renderClips();
+    });
+
+    vodsTab.addEventListener("click", () => {
+        vodsTab.classList.add("active");
+        statusTab.classList.remove("active");
+        clipsTab.classList.remove("active");
+        vodsSection.classList.remove("hidden");
+        statusSection.classList.add("hidden");
+        clipsSection.classList.add("hidden");
+
+        // Carrega as lives ao clicar na aba
+        renderVods();
+    });
+}
+
+
+// Inicializa as abas e o status
+setupTabs();
+updateStatus();
     
