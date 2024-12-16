@@ -1,198 +1,47 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador do Tucano</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-dark: #0A0A0A;
-            --primary-purple: #9D4EDD;
-            --dark-purple: #240046;
-            --medium-purple: #5A189A;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(45deg, var(--primary-dark), var(--dark-purple));
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: 'Roboto', sans-serif;
-            color: #fff;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .background-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            background: linear-gradient(45deg, 
-                rgba(93, 25, 154, 0.1),
-                rgba(157, 78, 221, 0.1));
-            filter: blur(50px);
-            animation: gradientBG 15s ease infinite;
-        }
-
-        @keyframes gradientBG {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        .container {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            max-width: 1200px;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .logo {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--primary-purple);
-            text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
-            font-family: 'Orbitron', sans-serif;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 4rem;
-            color: #fff;
-            opacity: 0.9;
-            text-shadow: 0 0 5px rgba(157, 78, 221, 0.3);
-        }
-
-        .message {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            color: #fff;
-            text-shadow: 0 0 5px rgba(157, 78, 221, 0.3);
-        }
-
-        .counter {
-            background: rgba(157, 78, 221, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            margin-bottom: 2rem;
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .counter:hover {
-            transform: translateY(-5px);
-        }
-
-        .days {
-            font-size: 5rem;
-            font-weight: 700;
-            color: var(--primary-purple);
-            text-shadow: 0 0 20px rgba(157, 78, 221, 0.7);
-            font-family: 'Orbitron', sans-serif;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px var(--primary-purple),
-                    0 0 20px var(--primary-purple), 0 0 25px var(--primary-purple);
-            }
-            to {
-                text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px var(--primary-purple),
-                    0 0 40px var(--primary-purple), 0 0 50px var(--primary-purple);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 2rem;
-            }
-            .subtitle {
-                font-size: 1rem;
-            }
-            .message {
-                font-size: 1.2rem;
-            }
-            .days {
-                font-size: 3.5rem;
-            }
-            .counter {
-                padding: 2rem;
-            }
-        }
-    </style>
+    <title>BRKK | Status e Clips</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="background-animation"></div>
-    <div class="container">
-        <h1 class="logo">BRKK</h1>
-        <p class="subtitle">Twitch/BRKK o maior vagabundo da Twitch</p>
-        <div class="counter">
-            <p class="message">Tucano está folgando com o dinheiro do seu mísero sub a exatos:</p>
-            <div class="days">0</div>
+    <header>
+        <div class="logo-container">
+            <img src="/img/twitch-ar21.svg" alt="Twitch Logo" class="brkk">
+            <h1>BRKK</h1>
         </div>
-    </div>
+        <nav>
+            <button id="status-tab" class="active">Status</button>
+            <button id="clips-tab">Clipes Recentes</button>
+        </nav>
+    </header>
 
-    <script>
-        // Data da última live (exemplo: 1 de Janeiro de 2024)
-        const lastStreamDate = new Date('2024-12-05');
+    <main>
+        <!-- Aba de Status -->
+        <div id="status-section" class="tab-content">
+            <div class="status-container">
+                <p>O tucano está folgando com dinheiro do seu sub a exatos:</p>
+                <div class="days-counter">
+                    <span id="days-offline">...</span> <span>dias</span>
+                </div>
+            </div>
+        </div>
 
-        function updateCounter() {
-            const now = new Date();
-            const difference = now - lastStreamDate;
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            
-            document.querySelector('.days').textContent = days;
-        }
+        <!-- Aba de Clipes -->
+        <div id="clips-section" class="tab-content hidden">
+            <h2>Clipes Recentes</h2>
+            <div id="clips-container">
+                <p>Carregando clipes...</p>
+            </div>
+        </div>
+    </main>
 
-        // Atualiza o contador imediatamente e depois a cada segundo
-        updateCounter();
-        setInterval(updateCounter, 1000);
+    <footer>
+        <p>Feito Por um hater do BRKK</p>
+    </footer>
 
-        // Adiciona efeito de parallax ao movimento do mouse
-        document.addEventListener('mousemove', (e) => {
-            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
-            
-            document.querySelector('.counter').style.transform = 
-                `translateY(-5px) translateX(${moveX}px) translateY(${moveY}px)`;
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
