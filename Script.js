@@ -106,7 +106,7 @@ async function renderClips() {
 
         clipElement.innerHTML = `
             <iframe 
-                src="${clip.embed_url}&parent=localhost&parent=seusite.com" 
+                src="${clip.embed_url}&parent=localhost&parent=brkk.netlify.app" 
                 frameborder="0" 
                 allowfullscreen>
             </iframe>
