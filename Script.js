@@ -170,12 +170,12 @@ async function renderVods() {
 
 
 // Função para atualizar o status
+// Atualiza o status ao vivo
 async function updateStatus() {
     try {
         const userId = await getUserId();
 
         if (userId) {
-            // Verifica se o canal está ao vivo
             const streamResponse = await fetch(twitchStreamApi, {
                 headers: {
                     "Client-ID": clientId,
@@ -184,24 +184,33 @@ async function updateStatus() {
             });
 
             const streamData = await streamResponse.json();
+            const liveStatus = document.getElementById("live-status");
             const statusMessage = document.getElementById("status-message");
+            const twitchEmbed = document.querySelector(".twitch-embed");
+            const animatedArrow = document.querySelector(".animated-arrow");
             const daysCounter = document.querySelector(".days-counter");
 
             if (streamData && streamData.data && streamData.data.length > 0) {
-                // Se o canal está ao vivo
+                // Canal está ao vivo
+                liveStatus.classList.remove("hidden");
                 statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
-                statusMessage.classList.add("live-status"); // Adiciona animação
+                statusMessage.classList.add("status-highlight");
                 daysCounter.style.display = "none"; // Esconde o contador de dias
+                twitchEmbed.classList.remove("hidden"); // Mostra o embed Twitch
+                animatedArrow.classList.remove("hidden"); // Mostra a seta animada
             } else {
-                // O canal está offline
+                // Canal está offline
+                liveStatus.classList.add("hidden");
+                twitchEmbed.classList.add("hidden"); // Esconde o embed Twitch
+                animatedArrow.classList.add("hidden"); // Esconde a seta
                 const lastStreamDate = await getLastStreamDate(userId);
                 if (lastStreamDate) {
                     const daysOffline = calculateDaysDifference(lastStreamDate);
                     statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
-                    daysCounter.style.display = "flex"; // Mostra o contador de dias
+                    daysCounter.style.display = "flex";
                     document.getElementById("days-offline").textContent = daysOffline;
                 }
-                statusMessage.classList.remove("live-status"); // Remove animação
+                statusMessage.classList.remove("status-highlight");
             }
         }
     } catch (error) {
@@ -210,34 +219,32 @@ async function updateStatus() {
 }
 
 
+
 // Alternância entre abas
 function setupTabs() {
     const statusTab = document.getElementById("status-tab");
     const clipsTab = document.getElementById("clips-tab");
-    const vodsTab = document.getElementById("vods-tab"); // Nova aba
+    const vodsTab = document.getElementById("vods-tab");
     const statusSection = document.getElementById("status-section");
     const clipsSection = document.getElementById("clips-section");
-    const vodsSection = document.getElementById("vods-section"); // Nova seção
+    const vodsSection = document.getElementById("vods-section");
 
     statusTab.addEventListener("click", () => {
         statusTab.classList.add("active");
         clipsTab.classList.remove("active");
-        vodsTab.classList.remove("active"); // Remove ativo da nova aba
+        vodsTab.classList.remove("active");
         statusSection.classList.remove("hidden");
         clipsSection.classList.add("hidden");
-        vodsSection.classList.add("hidden"); // Esconde a nova seção
+        vodsSection.classList.add("hidden");
     });
 
     clipsTab.addEventListener("click", () => {
         clipsTab.classList.add("active");
         statusTab.classList.remove("active");
-        vodsTab.classList.remove("active"); // Remove ativo da nova aba
+        vodsTab.classList.remove("active");
         clipsSection.classList.remove("hidden");
         statusSection.classList.add("hidden");
-        vodsSection.classList.add("hidden"); // Esconde a nova seção
-
-        // Carrega os clipes ao clicar na aba
-        renderClips();
+        vodsSection.classList.add("hidden");
     });
 
     vodsTab.addEventListener("click", () => {
@@ -247,9 +254,6 @@ function setupTabs() {
         vodsSection.classList.remove("hidden");
         statusSection.classList.add("hidden");
         clipsSection.classList.add("hidden");
-
-        // Carrega as lives ao clicar na aba
-        renderVods();
     });
 }
 
@@ -257,4 +261,4 @@ function setupTabs() {
 // Inicializa as abas e o status
 setupTabs();
 updateStatus();
-    
+                  
