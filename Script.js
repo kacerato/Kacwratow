@@ -224,27 +224,30 @@ async function updateStatus() {
 function setupTabs() {
     const statusTab = document.getElementById("status-tab");
     const clipsTab = document.getElementById("clips-tab");
-    const vodsTab = document.getElementById("vods-tab");
+    const vodsTab = document.getElementById("vods-tab"); // Nova aba
     const statusSection = document.getElementById("status-section");
     const clipsSection = document.getElementById("clips-section");
-    const vodsSection = document.getElementById("vods-section");
+    const vodsSection = document.getElementById("vods-section"); // Nova seção
 
     statusTab.addEventListener("click", () => {
-        statusTab.classList.add("active"); 
+        statusTab.classList.add("active");
         clipsTab.classList.remove("active");
-        vodsTab.classList.remove("active");
+        vodsTab.classList.remove("active"); // Remove ativo da nova aba
         statusSection.classList.remove("hidden");
         clipsSection.classList.add("hidden");
-        vodsSection.classList.add("hidden");
+        vodsSection.classList.add("hidden"); // Esconde a nova seção
     });
 
     clipsTab.addEventListener("click", () => {
         clipsTab.classList.add("active");
         statusTab.classList.remove("active");
-        vodsTab.classList.remove("active");
+        vodsTab.classList.remove("active"); // Remove ativo da nova aba
         clipsSection.classList.remove("hidden");
         statusSection.classList.add("hidden");
-        vodsSection.classList.add("hidden");
+        vodsSection.classList.add("hidden"); // Esconde a nova seção
+
+        // Carrega os clipes ao clicar na aba
+        renderClips();
     });
 
     vodsTab.addEventListener("click", () => {
@@ -254,6 +257,9 @@ function setupTabs() {
         vodsSection.classList.remove("hidden");
         statusSection.classList.add("hidden");
         clipsSection.classList.add("hidden");
+
+        // Carrega as lives ao clicar na aba
+        renderVods();
     });
 }
 
@@ -261,4 +267,4 @@ function setupTabs() {
 // Inicializa as abas e o status
 setupTabs();
 updateStatus();
-            
+    
