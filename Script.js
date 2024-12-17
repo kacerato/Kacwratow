@@ -91,6 +91,7 @@ async function renderClips() {
     if (!userId) return;
 
     const clips = await getClips(userId);
+    
 
     const clipsContainer = document.getElementById("clips-container");
     clipsContainer.innerHTML = ""; // Limpa o conteúdo anterior
@@ -187,31 +188,37 @@ async function updateStatus() {
             const liveStatus = document.getElementById("live-status");
             const statusMessage = document.getElementById("status-message");
             const twitchEmbed = document.querySelector(".twitch-embed");
+            
             const animatedArrow = document.querySelector(".animated-arrow");
             const daysCounter = document.querySelector(".days-counter");
 
-            if (streamData && streamData.data && streamData.data.length > 0) {
-                // Canal está ao vivo
-                liveStatus.classList.remove("hidden");
-                statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
-                statusMessage.classList.add("status-highlight");
-                daysCounter.style.display = "none"; // Esconde o contador de dias
-                twitchEmbed.classList.remove("hidden"); // Mostra o embed Twitch
-                animatedArrow.classList.remove("hidden"); // Mostra a seta animada
-            } else {
-                // Canal está offline
-                liveStatus.classList.add("hidden");
-                twitchEmbed.classList.add("hidden"); // Esconde o embed Twitch
-                animatedArrow.classList.add("hidden"); // Esconde a seta
-                const lastStreamDate = await getLastStreamDate(userId);
-                if (lastStreamDate) {
-                    const daysOffline = calculateDaysDifference(lastStreamDate);
-                    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
-                    daysCounter.style.display = "flex";
-                    document.getElementById("days-offline").textContent = daysOffline;
-                }
-                statusMessage.classList.remove("status-highlight");
-            }
+            const chatContainer = document.getElementById("chat-container"); // Seleciona o contêiner do chat
+
+// Dentro de updateStatus():
+if (streamData && streamData.data && streamData.data.length > 0) {
+  // Canal está ao vivo
+  liveStatus.classList.remove("hidden");
+  statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
+  statusMessage.classList.add("status-highlight");
+  daysCounter.style.display = "none"; // Esconde o contador de dias
+  twitchEmbed.classList.remove("hidden"); // Mostra o embed Twitch
+  animatedArrow.classList.remove("hidden"); // Mostra a seta animada
+  chatContainer.classList.remove("hidden"); // Mostra o chat
+} else {
+  // Canal está offline
+  liveStatus.classList.add("hidden");
+  twitchEmbed.classList.add("hidden"); // Esconde o embed Twitch
+  animatedArrow.classList.add("hidden"); // Esconde a seta
+  chatContainer.classList.add("hidden"); // Esconde o chat
+  const lastStreamDate = await getLastStreamDate(userId);
+  if (lastStreamDate) {
+    const daysOffline = calculateDaysDifference(lastStreamDate);
+    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
+    daysCounter.style.display = "flex";
+    document.getElementById("days-offline").textContent = daysOffline;
+  }
+  statusMessage.classList.remove("status-highlight");
+}
         }
     } catch (error) {
         console.error("Erro ao atualizar o status:", error);
