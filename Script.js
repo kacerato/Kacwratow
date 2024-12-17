@@ -138,6 +138,8 @@ async function getVods(userId) {
 }
 
 // Função para renderizar os VODs no DOM
+// Função para renderizar os VODs no DOM
+// Função para renderizar os VODs no DOM
 async function renderVods() {
     const userId = await getUserId();
     if (!userId) return;
@@ -145,6 +147,7 @@ async function renderVods() {
     const vods = await getVods(userId);
 
     const vodsContainer = document.getElementById("vods-container");
+    const mainPlayer = document.getElementById("main-player");
     vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
 
     if (vods.length === 0) {
@@ -152,22 +155,35 @@ async function renderVods() {
         return;
     }
 
+    // Define o primeiro VOD como o player principal
+    mainPlayer.src = `https://player.twitch.tv/?video=${vods[0].id}&parent=localhost&parent=brkk.netlify.app`;
+
     vods.forEach((vod) => {
         const vodElement = document.createElement("div");
         vodElement.classList.add("vod");
 
         vodElement.innerHTML = `
-            <iframe 
-                src="https://player.twitch.tv/?video=${vod.id}&parent=localhost&parent=brkk.netlify.app" 
-                frameborder="0" 
-                allowfullscreen>
-            </iframe>
-            <div class="vod-title">${vod.title}</div>
+            <div class="vod-preview">
+                <iframe 
+                    src="https://player.twitch.tv/?video=${vod.id}&parent=localhost&parent=brkk.netlify.app&autoplay=false" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen">
+                </iframe>
+                <div class="vod-title">${vod.title}</div>
+                <button class="select-vod-btn">Assistir</button>
+            </div>
         `;
+
+        // Adiciona evento de clique para trocar o player principal
+        const selectButton = vodElement.querySelector(".select-vod-btn");
+        selectButton.addEventListener("click", () => {
+            mainPlayer.src = `https://player.twitch.tv/?video=${vod.id}&parent=localhost&parent=brkk.netlify.app`;
+        });
 
         vodsContainer.appendChild(vodElement);
     });
 }
+
 
 
 // Função para atualizar o status
