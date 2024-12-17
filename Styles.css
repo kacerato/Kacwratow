@@ -387,3 +387,33 @@ nav button.active {
     animation: bounce 2s infinite;
 }
 
+#player-main {
+    width: 100%;
+    max-width: 800px; /* Tamanho máximo do player principal */
+    margin: 0 auto 20px; /* Centralizado com espaçamento inferior */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#player-main iframe {
+    width: 100%;
+    height: 450px; /* Altura do player principal */
+    border: none;
+}
+
+.select-vod-btn {
+    background-color: #9146ff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.select-vod-btn:hover {
+    background-color: #772ce8;
+}
