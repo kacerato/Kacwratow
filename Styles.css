@@ -366,4 +366,7 @@ nav button.active {
 #status-section .live-light {
     display: block;
     }
+.hidden {
+    display: none;
+}
     
