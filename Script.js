@@ -270,30 +270,35 @@ async function updateStatus() {
 function setupTabs() {
     const statusTab = document.getElementById("status-tab");
     const clipsTab = document.getElementById("clips-tab");
-    const vodsTab = document.getElementById("vods-tab"); // Nova aba
+    const vodsTab = document.getElementById("vods-tab");
     const statusSection = document.getElementById("status-section");
     const clipsSection = document.getElementById("clips-section");
-    const vodsSection = document.getElementById("vods-section"); // Nova seção
+    const vodsSection = document.getElementById("vods-section");
+
+    let clipsLoaded = false;
+    let vodsLoaded = false;
 
     statusTab.addEventListener("click", () => {
         statusTab.classList.add("active");
         clipsTab.classList.remove("active");
-        vodsTab.classList.remove("active"); // Remove ativo da nova aba
+        vodsTab.classList.remove("active");
         statusSection.classList.remove("hidden");
         clipsSection.classList.add("hidden");
-        vodsSection.classList.add("hidden"); // Esconde a nova seção
+        vodsSection.classList.add("hidden");
     });
 
     clipsTab.addEventListener("click", () => {
         clipsTab.classList.add("active");
         statusTab.classList.remove("active");
-        vodsTab.classList.remove("active"); // Remove ativo da nova aba
+        vodsTab.classList.remove("active");
         clipsSection.classList.remove("hidden");
         statusSection.classList.add("hidden");
-        vodsSection.classList.add("hidden"); // Esconde a nova seção
+        vodsSection.classList.add("hidden");
 
-        // Carrega os clipes ao clicar na aba
-        renderClips();
+        if (!clipsLoaded) {
+            renderClips();
+            clipsLoaded = true;
+        }
     });
 
     vodsTab.addEventListener("click", () => {
@@ -304,8 +309,10 @@ function setupTabs() {
         statusSection.classList.add("hidden");
         clipsSection.classList.add("hidden");
 
-        // Carrega as lives ao clicar na aba
-        renderVods();
+        if (!vodsLoaded) {
+            renderVods();
+            vodsLoaded = true;
+        }
     });
 }
 
