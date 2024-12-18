@@ -45,26 +45,17 @@ h1 {
 main {
     flex-grow: 1;
     display: flex;
-    flex-direction: column; /* Alinha os elementos em coluna */
+    flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     text-align: center;
     padding: 20px;
-    gap: 20px; /* Espaçamento entre o status e o chat */
+    gap: 20px;
 }
 
 /* Status ao vivo */
-.live-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    max-width: 600px; /* Limita o tamanho em telas maiores */
-}
 
 #live-status {
-    display: flex;
     align-items: center;
     gap: 10px;
     background-color: #292b2f;
@@ -82,6 +73,7 @@ main {
 }
 
 .live-light {
+    display: inline-block;
     height: 20px;
     width: 20px;
     background-color: red;
@@ -107,7 +99,7 @@ main {
 /* Chat em tempo real */
 #chat-container {
     width: 100%;
-    max-width: 600px; /* Limita o tamanho em telas maiores */
+    max-width: 600px;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -115,7 +107,7 @@ main {
 
 #chat-container iframe {
     width: 100%;
-    height: 500px; /* Altura padrão */
+    height: 500px;
 }
 
 /* Responsividade para dispositivos móveis */
@@ -134,7 +126,7 @@ main {
     }
 
     #chat-container iframe {
-        height: 400px; /* Altura reduzida em tablets */
+        height: 400px;
     }
 }
 
@@ -154,7 +146,7 @@ main {
     }
 
     #chat-container iframe {
-        height: 300px; /* Altura reduzida em smartphones */
+        height: 300px;
     }
 }
 
@@ -182,7 +174,7 @@ main {
 .days-counter {
     font-size: 4rem;
     font-weight: bold;
-    color: #9146ff; /* Roxo Twitch */
+    color: #9146ff;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -252,10 +244,10 @@ nav button.active {
 }
 
 .clip-title {
-    padding: 10px;
     font-size: 1rem;
     color: #f4f4f5;
     text-align: center;
+    margin: 10px 0;
 }
 
 /* Container das últimas lives */
@@ -275,6 +267,17 @@ nav button.active {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+.vod-preview {
+    background-color: #292b2f;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+}
+
 .vod iframe {
     width: 100%;
     height: 200px;
@@ -282,15 +285,22 @@ nav button.active {
 }
 
 .vod-title {
-    padding: 10px;
     font-size: 1rem;
     color: #f4f4f5;
     text-align: center;
+    margin: 10px 0;
 }
+
+.vod-thumbnail {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
 /* Estilo para destacar a frase */
 .status-highlight {
-    background-color: #9146ff; /* Fundo roxo Twitch */
-    color: #ffffff; /* Texto branco */
+    background-color: #9146ff;
+    color: #ffffff;
     font-size: 1.5rem;
     font-weight: bold;
     padding: 15px 20px;
@@ -306,13 +316,13 @@ nav button.active {
 .animated-arrow {
     text-align: center;
     margin-top: 10px;
-    animation: bounce 1.5s infinite; /* Animação de pulo */
+    animation: bounce 1.5s infinite;
 }
 
 .custom-arrow {
     height: 50px;
     width: 50px;
-    fill: #9146ff; /* Roxo Twitch */
+    fill: #9146ff;
 }
 
 /* Animação de pulo para a seta */
@@ -358,27 +368,6 @@ nav button.active {
     width: auto;
 }
 
-/* Esconde o chat, a seta e o embed ao vivo nas abas de Clipes e Lives Recentes */
-#clips-section #chat-container,
-#clips-section .twitch-embed,
-#clips-section .live-light,
-#vods-section #chat-container,
-#vods-section .twitch-embed,
-#vods-section .live-light {
-    display: none;
-}
-
-/* Mostra os elementos apenas na aba de Status */
-#status-section #chat-container,
-#status-section .twitch-embed,
-#status-section .live-light {
-    display: block;
-    }
-    
-.hidden {
-    display: none;
-}
-
 .counter-animation {
     display: flex;
     align-items: center;
@@ -389,8 +378,8 @@ nav button.active {
 
 #player-main {
     width: 100%;
-    max-width: 800px; /* Tamanho máximo do player principal */
-    margin: 0 auto 20px; /* Centralizado com espaçamento inferior */
+    max-width: 800px;
+    margin: 0 auto 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     overflow: hidden;
@@ -398,11 +387,72 @@ nav button.active {
 
 #player-main iframe {
     width: 100%;
-    height: 450px; /* Altura do player principal */
+    height: 450px;
     border: none;
 }
 
-.select-vod-btn {
+#viewers-counter {
+    margin-top: 10px;
+    font-size: 1.5rem;
+    color: #f4f4f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+#viewers-count {
+    font-weight: bold;
+    color: #9146ff;
+    margin-right: 5px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+#main-playerclips {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.clip-preview {
+    background-color: #292b2f;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+}
+
+.clip-thumbnail {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.select-clip-btn, .select-vod-btn {
     background-color: #9146ff;
     color: white;
     border: none;
@@ -414,6 +464,11 @@ nav button.active {
     margin-top: 10px;
 }
 
-.select-vod-btn:hover {
+.select-clip-btn:hover, .select-vod-btn:hover {
     background-color: #772ce8;
 }
+
+.hidden {
+    display: none;
+}
+
