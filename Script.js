@@ -94,11 +94,12 @@ async function renderClips() {
   clipsContainer.innerHTML = ""; // Limpa o conteúdo anterior
 
   const mainPlayer = document.getElementById("main-playerclips");
+  mainPlayer.innerHTML = ""; // Limpa o conteúdo anterior do player principal
   const mainPlayerIframe = document.createElement("iframe");
   mainPlayerIframe.setAttribute("frameborder", "0");
   mainPlayerIframe.setAttribute("allowfullscreen", "");
   mainPlayerIframe.setAttribute("width", "100%");
-  mainPlayerIframe.setAttribute("height", "300px"); // Altura do player principal
+  mainPlayerIframe.setAttribute("height", "300px");
 
   if (clips.length === 0) {
     clipsContainer.textContent = "Nenhum clipe encontrado.";
@@ -161,11 +162,12 @@ async function renderVods() {
     vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
 
     const mainPlayer = document.getElementById("main-player");
+    mainPlayer.innerHTML = ""; // Limpa o conteúdo anterior do player principal
     const mainPlayerIframe = document.createElement("iframe");
     mainPlayerIframe.setAttribute("frameborder", "0");
     mainPlayerIframe.setAttribute("allowfullscreen", "");
     mainPlayerIframe.setAttribute("width", "100%");
-    mainPlayerIframe.setAttribute("height", "300px"); // Altura do player principal
+    mainPlayerIframe.setAttribute("height", "300px");
 
     if (vods.length === 0) {
         vodsContainer.textContent = "Nenhuma live encontrada.";
@@ -199,8 +201,6 @@ async function renderVods() {
     });
 }
 
-
-
 // Função para atualizar o status
 // Atualiza o status ao vivo
 async function updateStatus() {
@@ -227,48 +227,44 @@ async function updateStatus() {
             const viewersCounter = document.querySelector(".viewers-counter");
             const viewersCount = document.getElementById("viewers-count");
 
-// Dentro de updateStatus():
-if (streamData && streamData.data && streamData.data.length > 0) {
-  // Canal está ao vivo
-  liveStatus.classList.remove("hidden");
-  statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
-  statusMessage.classList.add("status-highlight");
-  daysCounter.style.display = "none"; // Esconde o contador de dias
-  twitchEmbed.classList.remove("hidden"); // Mostra o embed Twitch
-  animatedArrow.classList.remove("hidden"); 
-  // Mostra a seta animada
-  chatContainer.classList.remove("hidden"); // Mostra o chat
-  
-  
-   // Atualiza o contador de visualizadores
-  const viewers = streamData.data[0].viewer_count; // Obtém o número de visualizadores
-  viewersCount.textContent = viewers; // Atualiza o contador no DOM
-  viewersCounter.classList.remove("hidden"); // Mostra o contador de visualizadores
- 
-  
-} else {
-  // Canal está offline
-  liveStatus.classList.add("hidden");
-  twitchEmbed.classList.add("hidden"); // Esconde o embed Twitch
-  animatedArrow.classList.add("hidden"); // Esconde a seta
-  chatContainer.classList.add("hidden"); // Esconde o chat
-  const lastStreamDate = await getLastStreamDate(userId);
-  if (lastStreamDate) {
-    const daysOffline = calculateDaysDifference(lastStreamDate);
-    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
-    daysCounter.style.display = "flex";
-    document.getElementById("days-offline").textContent = daysOffline;
-    viewersCounter.classList.add("hidden"); 
-  }
-  statusMessage.classList.remove("status-highlight");
-}
+            // Dentro de updateStatus():
+            if (streamData && streamData.data && streamData.data.length > 0) {
+                // Canal está ao vivo
+                liveStatus.classList.remove("hidden");
+                statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
+                statusMessage.classList.add("status-highlight");
+                daysCounter.style.display = "none"; // Esconde o contador de dias
+                twitchEmbed.classList.remove("hidden"); // Mostra o embed Twitch
+                animatedArrow.classList.remove("hidden"); 
+                // Mostra a seta animada
+                chatContainer.classList.remove("hidden"); // Mostra o chat
+                
+                // Atualiza o contador de visualizadores
+                const viewers = streamData.data[0].viewer_count; // Obtém o número de visualizadores
+                viewersCount.textContent = viewers; // Atualiza o contador no DOM
+                viewersCounter.classList.remove("hidden"); // Mostra o contador de visualizadores
+                
+            } else {
+                // Canal está offline
+                liveStatus.classList.add("hidden");
+                twitchEmbed.classList.add("hidden"); // Esconde o embed Twitch
+                animatedArrow.classList.add("hidden"); // Esconde a seta
+                chatContainer.classList.add("hidden"); // Esconde o chat
+                const lastStreamDate = await getLastStreamDate(userId);
+                if (lastStreamDate) {
+                    const daysOffline = calculateDaysDifference(lastStreamDate);
+                    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
+                    daysCounter.style.display = "flex";
+                    document.getElementById("days-offline").textContent = daysOffline;
+                    viewersCounter.classList.add("hidden"); 
+                }
+                statusMessage.classList.remove("status-highlight");
+            }
         }
     } catch (error) {
         console.error("Erro ao atualizar o status:", error);
     }
 }
-
-
 
 // Alternância entre abas
 function setupTabs() {
@@ -312,7 +308,6 @@ function setupTabs() {
         renderVods();
     });
 }
-
 
 // Inicializa as abas e o status
 setupTabs();
