@@ -18,7 +18,7 @@ body {
 }
 
 header {
-    background-color: #9146ff;
+    background-color: #27074F;
     width: 100%;
     padding: 1rem 0;
     text-align: center;
@@ -181,11 +181,15 @@ main {
 }
 
 footer {
-    background-color: #9146ff;
-    width: 100%;
-    text-align: center;
-    padding: 1rem 0;
-    color: white;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 10px 0;
+  z-index: 1000; /* Para garantir que o rodapé esteja acima de outros elementos */
 }
 
 /* Estilo do menu de navegação */
@@ -471,3 +475,199 @@ nav button.active {
 .hidden {
     display: none;
 }
+
+#achievements-container {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.achievement {
+  background-color: #27074F;
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 18x;
+}
+
+.achievement-icon {
+  width: 35px;
+  height: 35px;
+  animation: swingStar 2s ease-in-out infinite;
+}
+
+.brkk-head {
+  width: 50px;
+  height: 50px;
+  animation: fadeInOut 4s ease-in-out infinite, swingHead 2s ease-in-out infinite;
+}
+
+.star-3-days {
+  fill: #FFD700;
+}
+
+.star-5-days {
+  fill: #C0C0C0;
+}
+
+.star-10-days {
+  fill: #CD7F32;
+}
+
+.star-15-days {
+  fill: #E5E4E2;
+}
+
+.achievement-text {
+  margin: 0;
+  flex-grow: 1;
+}
+
+@keyframes swingStar {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+@keyframes swingHead {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .achievement {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .achievement-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brkk-head {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .achievement {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .achievement-icon {
+    width: 25px;
+    height: 25px;
+  }
+
+  .brkk-head {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Responsividade - existing media queries remain unchanged */
+@media (max-width: 768px) {
+  .status-container {
+    padding: 20px;
+  }
+
+  .days-counter {
+    font-size: 3rem;
+  }
+
+  .achievement {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .achievement-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .brkk-head {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-container {
+    padding: 15px;
+  }
+
+  .days-counter {
+    font-size: 2.5rem;
+  }
+
+  .achievement {
+    font-size: 16px;
+    padding: 6px;
+  }
+
+  .achievement-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .brkk-head {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+@media (max-width: 1024px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 12px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 10px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+}
+
