@@ -62,7 +62,6 @@ function calculateDaysDifference(lastStreamDate) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte para dias
 }
 
-// Função para buscar os clipes recentes
 async function getClips(userId) {
   try {
     const now = new Date();
@@ -201,122 +200,173 @@ async function renderVods() {
     });
 }
 
+//Função para exibir o Achievement
+// Função para exibir o Achievement
+function showAchievement(days, message, starClass) {
+  const achievementsContainer = document.getElementById('achievements-container');
+  const achievementText = achievementsContainer.querySelector('.achievement-text');
+  const achievementIcon = achievementsContainer.querySelector('.achievement-icon');
+  const brkkHead = achievementsContainer.querySelector('.brkk-head');
+
+  achievementText.textContent = `${days}  ${message}`;
+  achievementIcon.classList.remove('star-3-days', 'star-5-days', 'star-10-days', 'star-15-days');
+  achievementIcon.classList.add(starClass);
+
+  if (days === 3) {
+    brkkHead.classList.remove('hidden');
+  } else {
+    brkkHead.classList.add('hidden');
+  }
+
+  achievementsContainer.classList.remove('hidden');
+}
+
+// Função para verificar e exibir Achievements
+function checkAchievements(daysOffline) {
+  let achievementMessage = "";
+  let achievementDays = 0;
+  let starClass = "";
+
+  if (daysOffline >= 15) {
+    achievementMessage = "dias sem live, é oficial tucano foi encontrado sem vida após um jogo do Vasco";
+    achievementDays = 15;
+    starClass = "star-15-days";
+  } else if (daysOffline >= 10) {
+    achievementMessage = "dias sem live, pensando em tirar meu sub dessa live de merda";
+    achievementDays = 10;
+    starClass = "star-10-days";
+  } else if (daysOffline >= 5) {
+    achievementMessage = "dias sem live, qual será a desculpa de hoje?";
+    achievementDays = 5;
+    starClass = "star-5-days";
+  } else if (daysOffline >= 3) {
+    achievementMessage = "Dias sem live, pelo visto comeram a fibra óptica de Sorocaba";
+    achievementDays = 3;
+    starClass = "star-3-days";
+  }
+
+  if (achievementMessage) {
+    showAchievement(achievementDays, achievementMessage, starClass);
+  } else {
+    // Se não houver achievement, esconde o container
+    document.getElementById('achievements-container').classList.add('hidden');
+  }
+}
+
 // Função para atualizar o status
-// Atualiza o status ao vivo
 async function updateStatus() {
-    try {
-        const userId = await getUserId();
+  try {
+    const userId = await getUserId();
 
-        if (userId) {
-            const streamResponse = await fetch(twitchStreamApi, {
-                headers: {
-                    "Client-ID": clientId,
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            });
+    if (userId) {
+      const streamResponse = await fetch(twitchStreamApi, {
+        headers: {
+          "Client-ID": clientId,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-            const streamData = await streamResponse.json();
-            const liveStatus = document.getElementById("live-status");
-            const statusMessage = document.getElementById("status-message");
-            const twitchEmbed = document.querySelector(".twitch-embed");
-            
-            const animatedArrow = document.querySelector(".animated-arrow");
-            const daysCounter = document.querySelector(".days-counter");
+      const streamData = await streamResponse.json();
+      const liveStatus = document.getElementById("live-status");
+      const statusMessage = document.getElementById("status-message");
+      const twitchEmbed = document.querySelector(".twitch-embed");
 
-            const chatContainer = document.getElementById("chat-container"); // Seleciona o contêiner do chat
-            const viewersCounter = document.querySelector(".viewers-counter");
-            const viewersCount = document.getElementById("viewers-count");
+      const animatedArrow = document.querySelector(".animated-arrow");
+      const daysCounter = document.querySelector(".days-counter");
 
-            // Dentro de updateStatus():
-            if (streamData && streamData.data && streamData.data.length > 0) {
-                // Canal está ao vivo
-                liveStatus.classList.remove("hidden");
-                statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
-                statusMessage.classList.add("status-highlight");
-                daysCounter.style.display = "none"; // Esconde o contador de dias
-                twitchEmbed.classList.remove("hidden"); // Mostra o embed Twitch
-                animatedArrow.classList.remove("hidden"); 
-                // Mostra a seta animada
-                chatContainer.classList.remove("hidden"); // Mostra o chat
-                
-                // Atualiza o contador de visualizadores
-                const viewers = streamData.data[0].viewer_count; // Obtém o número de visualizadores
-                viewersCount.textContent = viewers; // Atualiza o contador no DOM
-                viewersCounter.classList.remove("hidden"); // Mostra o contador de visualizadores
-                
-            } else {
-                // Canal está offline
-                liveStatus.classList.add("hidden");
-                twitchEmbed.classList.add("hidden"); // Esconde o embed Twitch
-                animatedArrow.classList.add("hidden"); // Esconde a seta
-                chatContainer.classList.add("hidden"); // Esconde o chat
-                const lastStreamDate = await getLastStreamDate(userId);
-                if (lastStreamDate) {
-                    const daysOffline = calculateDaysDifference(lastStreamDate);
-                    statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
-                    daysCounter.style.display = "flex";
-                    document.getElementById("days-offline").textContent = daysOffline;
-                    viewersCounter.classList.add("hidden"); 
-                }
-                statusMessage.classList.remove("status-highlight");
-            }
+      const chatContainer = document.getElementById("chat-container");
+      const viewersCounter = document.querySelector("#viewers-counter");
+      const viewersCount = document.getElementById("viewers-count");
+
+      if (streamData && streamData.data && streamData.data.length > 0) {
+        // Canal está ao vivo
+        liveStatus.classList.remove("hidden");
+        statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
+        statusMessage.classList.add("status-highlight");
+        daysCounter.style.display = "none";
+        twitchEmbed.classList.remove("hidden");
+        animatedArrow.classList.remove("hidden");
+        chatContainer.classList.remove("hidden");
+
+        const viewers = streamData.data[0].viewer_count;
+        viewersCount.textContent = viewers;
+        viewersCounter.classList.remove("hidden");
+        document.getElementById('achievements-container').classList.add('hidden');
+      } else {
+        // Canal está offline
+        liveStatus.classList.add("hidden");
+        twitchEmbed.classList.add("hidden");
+        animatedArrow.classList.add("hidden");
+        chatContainer.classList.add("hidden");
+        const lastStreamDate = await getLastStreamDate(userId);
+        if (lastStreamDate) {
+          const daysOffline = calculateDaysDifference(lastStreamDate);
+          statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
+          daysCounter.style.display = "flex";
+          document.getElementById("days-offline").textContent = daysOffline;
+          viewersCounter.classList.add("hidden");
+
+          // Verifica e exibe Achievements
+          checkAchievements(daysOffline);
         }
-    } catch (error) {
-        console.error("Erro ao atualizar o status:", error);
+        statusMessage.classList.remove("status-highlight");
+      }
     }
+  } catch (error) {
+    console.error("Erro ao atualizar o status:", error);
+  }
 }
 
 // Alternância entre abas
 function setupTabs() {
-    const statusTab = document.getElementById("status-tab");
-    const clipsTab = document.getElementById("clips-tab");
-    const vodsTab = document.getElementById("vods-tab");
-    const statusSection = document.getElementById("status-section");
-    const clipsSection = document.getElementById("clips-section");
-    const vodsSection = document.getElementById("vods-section");
+  const statusTab = document.getElementById("status-tab");
+  const clipsTab = document.getElementById("clips-tab");
+  const vodsTab = document.getElementById("vods-tab");
+  const statusSection = document.getElementById("status-section");
+  const clipsSection = document.getElementById("clips-section");
+  const vodsSection = document.getElementById("vods-section");
 
-    let clipsLoaded = false;
-    let vodsLoaded = false;
+  let clipsLoaded = false;
+  let vodsLoaded = false;
 
-    statusTab.addEventListener("click", () => {
-        statusTab.classList.add("active");
-        clipsTab.classList.remove("active");
-        vodsTab.classList.remove("active");
-        statusSection.classList.remove("hidden");
-        clipsSection.classList.add("hidden");
-        vodsSection.classList.add("hidden");
-    });
+  statusTab.addEventListener("click", () => {
+    statusTab.classList.add("active");
+    clipsTab.classList.remove("active");
+    vodsTab.classList.remove("active");
+    statusSection.classList.remove("hidden");
+    clipsSection.classList.add("hidden");
+    vodsSection.classList.add("hidden");
+  });
 
-    clipsTab.addEventListener("click", () => {
-        clipsTab.classList.add("active");
-        statusTab.classList.remove("active");
-        vodsTab.classList.remove("active");
-        clipsSection.classList.remove("hidden");
-        statusSection.classList.add("hidden");
-        vodsSection.classList.add("hidden");
+  clipsTab.addEventListener("click", () => {
+    clipsTab.classList.add("active");
+    statusTab.classList.remove("active");
+    vodsTab.classList.remove("active");
+    clipsSection.classList.remove("hidden");
+    statusSection.classList.add("hidden");
+    vodsSection.classList.add("hidden");
 
-        if (!clipsLoaded) {
-            renderClips();
-            clipsLoaded = true;
-        }
-    });
+    if (!clipsLoaded) {
+      renderClips();
+      clipsLoaded = true;
+    }
+  });
 
-    vodsTab.addEventListener("click", () => {
-        vodsTab.classList.add("active");
-        statusTab.classList.remove("active");
-        clipsTab.classList.remove("active");
-        vodsSection.classList.remove("hidden");
-        statusSection.classList.add("hidden");
-        clipsSection.classList.add("hidden");
+  vodsTab.addEventListener("click", () => {
+    vodsTab.classList.add("active");
+    statusTab.classList.remove("active");
+    clipsTab.classList.remove("active");
+    vodsSection.classList.remove("hidden");
+    statusSection.classList.add("hidden");
+    clipsSection.classList.add("hidden");
 
-        if (!vodsLoaded) {
-            renderVods();
-            vodsLoaded = true;
-        }
-    });
+    if (!vodsLoaded) {
+      renderVods();
+      vodsLoaded = true;
+    }
+  });
 }
 
 // Inicializa as abas e o status
 setupTabs();
 updateStatus();
-
