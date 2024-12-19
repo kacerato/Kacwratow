@@ -22,17 +22,27 @@
   </header>
 
   <main>
-    <!-- Aba de Status -->
-    <div id="status-section" class="tab-content">
-      <div class="status-container">
-        <h2 id="status-message">O tucano está folgando com dinheiro do seu sub a exatos:</h2>
-        <div class="counter-animation">
-          <div class="days-counter">
-            <span id="days-offline">...</span> <span>Dias</span>
-          </div>
-        </div>
-      </div>
-    </div>
+   <div id="status-section" class="tab-content">
+            <div id="live-status" class="hidden">
+                <span class="live-light"></span>
+                <span class="live-text">AO VIVO</span>
+            </div>
+            <div class="status-container">
+                <h2 id="status-message">O tucano está folgando com dinheiro do seu sub a exatos:</h2>
+                <div class="counter-animation">
+                    <div class="days-counter">
+                        <span id="days-offline">...</span> <span>Dias</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div id="achievements-container" class="hidden">
+                <div class="achievement">
+                    <img src="/img/star-icon.svg" alt="Achievement Star" class="achievement-icon">
+                    <img src="/img/brkkcabeca.png" alt="BRKK Cabeça" class="brkk-head hidden">
+                    <p class="achievement-text"></p>
+                </div>
+            </div>
 
     <!-- Aba de Clipes -->
     <div id="clips-section" class="tab-content hidden">
@@ -101,3 +111,4 @@
 </body>
 
 </html>
+
