@@ -10,56 +10,56 @@ let twitchClipsApi;
 
 // Função para obter o ID do usuário
 async function getUserId() {
-    try {
-        const response = await fetch(twitchUserApi, {
-            headers: {
-                "Client-ID": clientId,
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+  try {
+    const response = await fetch(twitchUserApi, {
+      headers: {
+        "Client-ID": clientId,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-        const data = await response.json();
-        if (data && data.data && data.data.length > 0) {
-            return data.data[0].id;
-        } else {
-            console.error("Usuário não encontrado.");
-            return null;
-        }
-    } catch (error) {
-        console.error("Erro ao buscar ID do usuário:", error);
-        return null;
+    const data = await response.json();
+    if (data && data.data && data.data.length > 0) {
+      return data.data[0].id;
+    } else {
+      console.error("Usuário não encontrado.");
+      return null;
     }
+  } catch (error) {
+    console.error("Erro ao buscar ID do usuário:", error);
+    return null;
+  }
 }
 
 // Função para buscar a última transmissão salva
 async function getLastStreamDate(userId) {
-    try {
-        twitchVideosApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive`;
-        const response = await fetch(twitchVideosApi, {
-            headers: {
-                "Client-ID": clientId,
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+  try {
+    twitchVideosApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive`;
+    const response = await fetch(twitchVideosApi, {
+      headers: {
+        "Client-ID": clientId,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-        const data = await response.json();
-        if (data && data.data && data.data.length > 0) {
-            return new Date(data.data[0].created_at);
-        } else {
-            console.error("Nenhum vídeo de transmissão encontrado.");
-            return null;
-        }
-    } catch (error) {
-        console.error("Erro ao buscar última data de transmissão:", error);
-        return null;
+    const data = await response.json();
+    if (data && data.data && data.data.length > 0) {
+      return new Date(data.data[0].created_at);
+    } else {
+      console.error("Nenhum vídeo de transmissão encontrado.");
+      return null;
     }
+  } catch (error) {
+    console.error("Erro ao buscar última data de transmissão:", error);
+    return null;
+  }
 }
 
 // Função para calcular a diferença em dias
 function calculateDaysDifference(lastStreamDate) {
-    const currentDate = new Date();
-    const diffTime = Math.abs(currentDate - lastStreamDate);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte para dias
+  const currentDate = new Date();
+  const diffTime = Math.abs(currentDate - lastStreamDate);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte para dias
 }
 
 async function getClips(userId) {
@@ -134,55 +134,55 @@ async function renderClips() {
 
 // Função para buscar os últimos VODs
 async function getVods(userId) {
-    try {
-        const vodsApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive&first=3`;
-        const response = await fetch(vodsApi, {
-            headers: {
-                "Client-ID": clientId,
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+  try {
+    const vodsApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive&first=3`;
+    const response = await fetch(vodsApi, {
+      headers: {
+        "Client-ID": clientId,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-        const data = await response.json();
-        return data.data || [];
-    } catch (error) {
-        console.error("Erro ao buscar VODs:", error);
-        return [];
-    }
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Erro ao buscar VODs:", error);
+    return [];
+  }
 }
 
 // Função para renderizar os VODs no DOM
 async function renderVods() {
-    const userId = await getUserId();
-    if (!userId) return;
+  const userId = await getUserId();
+  if (!userId) return;
 
-    const vods = await getVods(userId);
-    const vodsContainer = document.getElementById("vods-container");
-    vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
+  const vods = await getVods(userId);
+  const vodsContainer = document.getElementById("vods-container");
+  vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
 
-    const mainPlayer = document.getElementById("main-player");
-    mainPlayer.innerHTML = ""; // Limpa o conteúdo anterior do player principal
-    const mainPlayerIframe = document.createElement("iframe");
-    mainPlayerIframe.setAttribute("frameborder", "0");
-    mainPlayerIframe.setAttribute("allowfullscreen", "");
-    mainPlayerIframe.setAttribute("width", "100%");
-    mainPlayerIframe.setAttribute("height", "300px");
+  const mainPlayer = document.getElementById("main-player");
+  mainPlayer.innerHTML = ""; // Limpa o conteúdo anterior do player principal
+  const mainPlayerIframe = document.createElement("iframe");
+  mainPlayerIframe.setAttribute("frameborder", "0");
+  mainPlayerIframe.setAttribute("allowfullscreen", "");
+  mainPlayerIframe.setAttribute("width", "100%");
+  mainPlayerIframe.setAttribute("height", "300px");
 
-    if (vods.length === 0) {
-        vodsContainer.textContent = "Nenhuma live encontrada.";
-        return;
-    }
+  if (vods.length === 0) {
+    vodsContainer.textContent = "Nenhuma live encontrada.";
+    return;
+  }
 
-    // Define o primeiro VOD como o player principal
-    mainPlayerIframe.src = `https://player.twitch.tv/?video=${vods[0].id}&parent=localhost&parent=brkk.netlify.app`;
-    mainPlayer.appendChild(mainPlayerIframe);
+  // Define o primeiro VOD como o player principal
+  mainPlayerIframe.src = `https://player.twitch.tv/?video=${vods[0].id}&parent=localhost&parent=brkk.netlify.app`;
+  mainPlayer.appendChild(mainPlayerIframe);
 
-    vods.forEach((vod) => {
-        const vodElement = document.createElement("div");
-        vodElement.classList.add("vod");
+  vods.forEach((vod) => {
+    const vodElement = document.createElement("div");
+    vodElement.classList.add("vod");
 
-        // Exibe a thumbnail, título e botão de assistir
-        vodElement.innerHTML = `
+    // Exibe a thumbnail, título e botão de assistir
+    vodElement.innerHTML = `
             <div class="vod-preview">
                 <img src="${vod.thumbnail_url.replace('%{width}', '320').replace('%{height}', '180')}" alt="${vod.title}" class="vod-thumbnail" />
                 <div class="vod-title">${vod.title}</div>
@@ -190,17 +190,16 @@ async function renderVods() {
             </div>
         `;
 
-        // Adiciona evento de clique para trocar o player principal
-        const selectButton = vodElement.querySelector(".select-vod-btn");
-        selectButton.addEventListener("click", () => {
-            mainPlayerIframe.src = `https://player.twitch.tv/?video=${selectButton.dataset.vodId}&parent=localhost&parent=brkk.netlify.app`;
-        });
-
-        vodsContainer.appendChild(vodElement);
+    // Adiciona evento de clique para trocar o player principal
+    const selectButton = vodElement.querySelector(".select-vod-btn");
+    selectButton.addEventListener("click", () => {
+      mainPlayerIframe.src = `https://player.twitch.tv/?video=${selectButton.dataset.vodId}&parent=localhost&parent=brkk.netlify.app`;
     });
+
+    vodsContainer.appendChild(vodElement);
+  });
 }
 
-//Função para exibir o Achievement
 // Função para exibir o Achievement
 function showAchievement(days, message, starClass) {
   const achievementsContainer = document.getElementById('achievements-container');
@@ -245,11 +244,13 @@ function checkAchievements(daysOffline) {
     starClass = "star-3-days";
   }
 
-  if (achievementMessage) {
+  const achievementsContainer = document.getElementById('achievements-container');
+
+  if (achievementMessage && daysOffline === achievementDays) {
     showAchievement(achievementDays, achievementMessage, starClass);
+    achievementsContainer.classList.remove('hidden');
   } else {
-    // Se não houver achievement, esconde o container
-    document.getElementById('achievements-container').classList.add('hidden');
+    achievementsContainer.classList.add('hidden');
   }
 }
 
@@ -367,6 +368,8 @@ function setupTabs() {
   });
 }
 
-// Inicializa as abas e o status
+
+
+// Inicialização
 setupTabs();
 updateStatus();
