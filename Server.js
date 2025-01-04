@@ -13,6 +13,11 @@ app.use(express.json());
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Rota para a página inicial
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Rota para download de VODs
 app.get('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.query;
@@ -53,7 +58,6 @@ app.get('/api/downloadvod', async (req, res) => {
     }
   });
 });
-
 
 // Iniciando o servidor
 app.listen(PORT, () => {
