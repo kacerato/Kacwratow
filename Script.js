@@ -144,7 +144,10 @@ async function getVods(userId) {
     });
 
     const data = await response.json();
-    return data.data || [];
+    return data.data.map(vod => ({
+      ...vod,
+      download_url: `https://api.twitch.tv/helix/videos?id=${vod.id}`
+    })) || [];
   } catch (error) {
     console.error("Erro ao buscar VODs:", error);
     return [];
@@ -181,23 +184,57 @@ async function renderVods() {
     const vodElement = document.createElement("div");
     vodElement.classList.add("vod");
 
-    // Exibe a thumbnail, título e botão de assistir
+    // Exibe a thumbnail, título e botões de assistir e selecionar para download
     vodElement.innerHTML = `
-            <div class="vod-preview">
-                <img src="${vod.thumbnail_url.replace('%{width}', '320').replace('%{height}', '180')}" alt="${vod.title}" class="vod-thumbnail" />
-                <div class="vod-title">${vod.title}</div>
-                <button class="select-vod-btn" data-vod-id="${vod.id}">Assistir</button>
-            </div>
-        `;
+      <div class="vod-preview">
+        <img src="${vod.thumbnail_url.replace('%{width}', '320').replace('%{height}', '180')}" alt="${vod.title}" class="vod-thumbnail" />
+        <div class="vod-title">${vod.title}</div>
+        <button class="select-vod-btn" data-vod-id="${vod.id}">Assistir</button>
+        <button class="select-vod-download-btn" data-vod-id="${vod.id}" data-vod-url="${vod.download_url}">Selecionar para Download</button>
+      </div>
+    `;
 
-    // Adiciona evento de clique para trocar o player principal
     const selectButton = vodElement.querySelector(".select-vod-btn");
     selectButton.addEventListener("click", () => {
       mainPlayerIframe.src = `https://player.twitch.tv/?video=${selectButton.dataset.vodId}&parent=localhost&parent=brkk.netlify.app`;
+      document.querySelectorAll('.vod').forEach(v => v.classList.remove('active'));
+      vodElement.classList.add('active');
+    });
+
+    const selectDownloadButton = vodElement.querySelector(".select-vod-download-btn");
+    selectDownloadButton.addEventListener("click", () => {
+      document.querySelectorAll('.vod').forEach(v => v.classList.remove('active'));
+      vodElement.classList.add('active');
+      document.getElementById('selected-vod-id').value = vod.id;
+      document.getElementById('selected-vod-url').value = vod.download_url;
     });
 
     vodsContainer.appendChild(vodElement);
   });
+}
+
+// Função para iniciar o download do VOD
+async function downloadVod(vodId, vodUrl, start, end) {
+  try {
+    const response = await fetch(`/api/downloadvod?vodId=${vodId}&vodUrl=${encodeURIComponent(vodUrl)}&start=${start}&end=${end}`);
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `brkk_vod_${vodId}_${start}_${end}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      alert('Download iniciado!');
+    } else {
+      throw new Error('Falha ao baixar o VOD');
+    }
+  } catch (error) {
+    console.error('Erro ao baixar VOD:', error);
+    alert('Ocorreu um erro ao tentar baixar o VOD.');
+  }
 }
 
 // Função para exibir o Achievement
@@ -368,8 +405,36 @@ function setupTabs() {
   });
 }
 
-
-
 // Inicialização
 setupTabs();
 updateStatus();
+
+// Evento de download VOD
+document.getElementById('download-vod').addEventListener('click', () => {
+  const vodId = document.getElementById('selected-vod-id').value;
+  const vodUrl = document.getElementById('selected-vod-url').value;
+  
+  if (!vodId || !vodUrl) {
+    alert('Por favor, selecione um VOD para baixar.');
+    return;
+  }
+
+  const startTime = document.getElementById('start-time').value;
+  const endTime = document.getElementById('end-time').value;
+
+  if (!startTime || !endTime || startTime >= endTime) {
+    alert('Por favor, selecione um intervalo de tempo válido.');
+    return;
+  }
+
+  downloadVod(vodId, vodUrl, startTime, endTime);
+});
+
+// Adicionar esta função para marcar um VOD como ativo ao clicar no botão de seleção
+document.querySelectorAll('.select-vod-btn').forEach(button => {
+  button.addEventListener('click', function() {
+    document.querySelectorAll('.vod').forEach(vod => vod.classList.remove('active'));
+    this.closest('.vod').classList.add('active');
+  });
+});
+
