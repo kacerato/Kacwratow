@@ -671,3 +671,86 @@ nav button.active {
   }
 }
 
+/* Melhorando a interface de seleção de tempo */
+/* Estilo melhorado para a seleção de tempo */
+/* Reset básico e estilos já existentes... */
+
+.vod-download-interface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.time-selection {
+  display: flex;
+  gap: 20px;
+  background: #292b2f;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.time-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-input {
+  width: 150px;
+  padding: 10px;
+  background: #333;
+  border: 1px solid #9146ff;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+label {
+  color: #f4f4f5;
+  margin-bottom: 5px;
+}
+
+.download-btn {
+  margin-top: 15px;
+  background-color: #9146ff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download-btn:hover {
+  background-color: #772ce8;
+  transform: translateY(-2px);
+}
+
+.download-btn::before {
+  content: '📥';
+  margin-right: 5px;
+}
+
+/* Adicionar os seguintes estilos para o botão de seleção de VOD */
+.select-vod-btn {
+  background-color: #9146ff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.select-vod-btn:hover {
+  background-color: #772ce8;
+}
