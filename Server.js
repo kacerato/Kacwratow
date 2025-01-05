@@ -22,7 +22,7 @@ if (!fs.existsSync(tempDir)) {
 // Função para obter URL do stream usando youtube-dl
 function getStreamUrl(vodUrl) {
   return new Promise((resolve, reject) => {
-    const youtubeDl = spawn('youtube-dl', ['-g', vodUrl]);
+    const youtubeDl = spawn('youtube-dl', ['-g', '-f', 'best', vodUrl]);
     let streamUrl = '';
     let errorOutput = '';
 
@@ -39,11 +39,34 @@ function getStreamUrl(vodUrl) {
       if (code === 0 && streamUrl) {
         resolve(streamUrl.trim());
       } else {
-        reject(new Error(`Falha ao obter URL do stream: ${errorOutput}`));
+        console.error('Falha ao obter URL do stream com youtube-dl. Tentando método alternativo...');
+        // Método alternativo usando curl
+        const curl = spawn('curl', ['-s', vodUrl]);
+        let htmlContent = '';
+
+        curl.stdout.on('data', (data) => {
+          htmlContent += data.toString();
+        });
+
+        curl.on('close', (curlCode) => {
+          if (curlCode === 0) {
+            const match = htmlContent.match(/https:\/\/[^"]*\.m3u8/);
+            if (match) {
+              console.log('URL do stream obtida com método alternativo:', match[0]);
+              resolve(match[0]);
+            } else {
+              reject(new Error(`Não foi possível encontrar a URL do stream no HTML`));
+            }
+          } else {
+            reject(new Error(`Falha ao obter conteúdo HTML: ${errorOutput}`));
+          }
+        });
       }
     });
   });
 }
+
+
 
 // Rota para a página inicial
 app.get('/', (req, res) => {
@@ -76,6 +99,7 @@ app.post('/api/downloadvod', async (req, res) => {
       '-ss', start,
       '-to', end,
       '-c', 'copy',
+      '-v', 'verbose', // Adiciona logs verbosos
       outputFile
     ];
 
@@ -89,10 +113,17 @@ app.post('/api/downloadvod', async (req, res) => {
       console.error('ffmpeg stderr:', data.toString());
     });
 
+    ffmpeg.stdout.on('data', (data) => {
+      console.log('ffmpeg stdout:', data.toString());
+    });
+
     ffmpeg.on('close', (code) => {
       console.log('ffmpeg processo fechado com código:', code);
       if (code === 0 && fs.existsSync(outputFile)) {
         console.log('Arquivo criado com sucesso:', outputFile);
+        const fileStats = fs.statSync(outputFile);
+        console.log('Tamanho do arquivo:', fileStats.size, 'bytes');
+
         res.download(outputFile, (err) => {
           if (err) {
             console.error('Erro ao enviar o arquivo:', err);
