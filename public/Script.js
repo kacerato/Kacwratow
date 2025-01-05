@@ -213,59 +213,13 @@ async function renderVods() {
   });
 }
 
-async function getVodUrl(vodId) {
-  try {
-    // Primeiro, obtemos os dados do VOD usando a API da Twitch
-    const response = await fetch(`https://api.twitch.tv/helix/videos?id=${vodId}`, {
-      headers: {
-        'Client-ID': clientId,
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao obter informações do VOD da API da Twitch');
-    }
-
-    const data = await response.json();
-
-    if (!data.data || data.data.length === 0) {
-      throw new Error('VOD não encontrado ou não está mais disponível');
-    }
-
-    // Obtemos a URL do VOD dos dados retornados
-    const vodData = data.data[0];
-
-    if (vodData.viewable !== 'public') {
-      throw new Error('Este VOD não está disponível publicamente');
-    }
-
-    return {
-      url: vodData.url,
-      duration: vodData.duration,
-      title: vodData.title
-    };
-  } catch (error) {
-    console.error('Erro ao obter URL do VOD:', error);
-    throw error;
-  }
-}
-
 // Função para iniciar o download do VOD
 async function downloadVod(vodId, start, end) {
   try {
-    const vodInfo = await getVodUrl(vodId);
-    console.log('Informações do VOD obtidas:', vodInfo);
+    console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
+    const vodUrl = `https://www.twitch.tv/videos/${vodId}`;
 
-    // Validar os tempos de início e fim com a duração do VOD
-    const startSeconds = timeToSeconds(start);
-    const endSeconds = timeToSeconds(end);
-    const durationSeconds = parseTwitchDuration(vodInfo.duration);
-
-    if (startSeconds >= durationSeconds || endSeconds > durationSeconds) {
-      throw new Error('O intervalo de tempo selecionado está fora da duração do VOD');
-    }
-
+    console.log('Enviando solicitação para o servidor...');
     const response = await fetch('/api/downloadvod', {
       method: 'POST',
       headers: {
@@ -273,26 +227,34 @@ async function downloadVod(vodId, start, end) {
       },
       body: JSON.stringify({
         vodId,
-        vodUrl: vodInfo.url,
+        vodUrl,
         start,
-        end,
-        title: vodInfo.title
+        end
       })
     });
 
+    console.log('Resposta recebida do servidor. Status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Erro recebido do servidor:', errorText);
       throw new Error(`Falha ao baixar o VOD: ${errorText}`);
     }
 
+    console.log('Iniciando download do blob...');
     const blob = await response.blob();
+    console.log('Blob recebido. Tamanho:', blob.size, 'bytes');
+
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
     a.download = `brkk_vod_${vodId}_${start}_${end}.mp4`;
     document.body.appendChild(a);
+
+    console.log('Iniciando o download no navegador...');
     a.click();
+
     window.URL.revokeObjectURL(url);
     console.log('Download iniciado no navegador');
     alert('Download iniciado!');
@@ -301,26 +263,6 @@ async function downloadVod(vodId, start, end) {
     console.error('Erro detalhado ao baixar VOD:', error);
     alert(`Erro ao baixar VOD: ${error.message}`);
   }
-}
-
-// Funções auxiliares para lidar com tempo
-function timeToSeconds(timeString) {
-  const [hours, minutes, seconds] = timeString.split(':').map(Number);
-  return (hours * 3600) + (minutes * 60) + seconds;
-}
-
-function parseTwitchDuration(duration) {
-  // Formato da duração da Twitch: "1h2m3s"
-  let seconds = 0;
-  const hours = duration.match(/(\d+)h/);
-  const minutes = duration.match(/(\d+)m/);
-  const secs = duration.match(/(\d+)s/);
-
-  if (hours) seconds += parseInt(hours[1]) * 3600;
-  if (minutes) seconds += parseInt(minutes[1]) * 60;
-  if (secs) seconds += parseInt(secs[1]);
-
-  return seconds;
 }
 
 
@@ -513,6 +455,7 @@ document.getElementById('download-vod').addEventListener('click', () => {
     return;
   }
 
+  console.log('Iniciando processo de download para VOD:', vodId);
   downloadVod(vodId, startTime, endTime);
 });
 
