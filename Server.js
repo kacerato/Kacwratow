@@ -76,15 +76,11 @@ app.post('/api/downloadvod', async (req, res) => {
     const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
     const ffmpegCommand = [
-  '-ss', start,
-  '-i', streamUrl,
-  '-to', end,
-  '-c', 'copy',
-  '-avoid_negative_ts', 'make_zero',
-  '-v', 'verbose',
-  '-stats',
-  '-loglevel', 'debug',
-  outputFile
+  '-ss', start,            // Define o tempo inicial antes de carregar o input
+  '-i', vodUrl,            // URL do VOD
+  '-to', end,              // Define o tempo final
+  '-c', 'copy',            // Copia o codec sem reprocessar
+  outputFile               // Arquivo de saída
 ];
     console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
 
