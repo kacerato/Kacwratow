@@ -19,23 +19,23 @@ if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
 }
 
-// Função para obter URL do stream usando streamlink
+// Função para obter URL do stream usando youtube-dl
 function getStreamUrl(vodUrl) {
   return new Promise((resolve, reject) => {
-    const streamlink = spawn('streamlink', ['--stream-url', vodUrl, 'best']);
+    const youtubeDl = spawn('youtube-dl', ['-g', vodUrl]);
     let streamUrl = '';
     let errorOutput = '';
 
-    streamlink.stdout.on('data', (data) => {
+    youtubeDl.stdout.on('data', (data) => {
       streamUrl += data.toString();
     });
 
-    streamlink.stderr.on('data', (data) => {
+    youtubeDl.stderr.on('data', (data) => {
       errorOutput += data.toString();
-      console.error('streamlink stderr:', data.toString());
+      console.error('youtube-dl stderr:', data.toString());
     });
 
-    streamlink.on('close', (code) => {
+    youtubeDl.on('close', (code) => {
       if (code === 0 && streamUrl) {
         resolve(streamUrl.trim());
       } else {
@@ -63,7 +63,7 @@ app.post('/api/downloadvod', async (req, res) => {
 
   try {
     // Obter URL do stream
-    console.log('Obtendo URL do stream com streamlink...');
+    console.log('Obtendo URL do stream com youtube-dl...');
     const streamUrl = await getStreamUrl(vodUrl);
     console.log('URL do stream obtida:', streamUrl);
 
@@ -124,3 +124,4 @@ app.post('/api/downloadvod', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
