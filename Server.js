@@ -1,25 +1,19 @@
 const express = require('express');
-const app = express();
-const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
+const app = express();
 
-// Porta do servidor
 const PORT = process.env.PORT || 3000;
 
-// Middleware para lidar com solicitações JSON
 app.use(express.json());
-
-// Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Criar diretório temp se não existir
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
 }
 
-// Função para obter URL do stream usando youtube-dl
 function getStreamUrl(vodUrl) {
   return new Promise((resolve, reject) => {
     const youtubeDl = spawn('youtube-dl', ['-g', '-f', 'best', vodUrl]);
@@ -40,7 +34,6 @@ function getStreamUrl(vodUrl) {
         resolve(streamUrl.trim());
       } else {
         console.error('Falha ao obter URL do stream com youtube-dl. Tentando método alternativo...');
-        // Método alternativo usando curl
         const curl = spawn('curl', ['-s', vodUrl]);
         let htmlContent = '';
 
@@ -66,14 +59,10 @@ function getStreamUrl(vodUrl) {
   });
 }
 
-
-
-// Rota para a página inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota para download de VODs
 app.post('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.body;
 
@@ -85,21 +74,18 @@ app.post('/api/downloadvod', async (req, res) => {
   console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end });
 
   try {
-    // Obter URL do stream
     console.log('Obtendo URL do stream com youtube-dl...');
     const streamUrl = await getStreamUrl(vodUrl);
     console.log('URL do stream obtida:', streamUrl);
 
-    // Nome do arquivo de saída
     const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
-    // Comando ffmpeg para baixar e cortar o vídeo
     const ffmpegCommand = [
       '-i', streamUrl,
       '-ss', start,
       '-to', end,
       '-c', 'copy',
-      '-v', 'verbose', // Adiciona logs verbosos
+      '-v', 'verbose',
       outputFile
     ];
 
@@ -129,7 +115,6 @@ app.post('/api/downloadvod', async (req, res) => {
             console.error('Erro ao enviar o arquivo:', err);
             res.status(500).send('Erro ao baixar o VOD: ' + err.message);
           }
-          // Remover o arquivo temporário após o download
           fs.unlink(outputFile, (err) => {
             if (err) console.error('Erro ao remover arquivo temporário:', err);
           });
@@ -151,7 +136,6 @@ app.post('/api/downloadvod', async (req, res) => {
   }
 });
 
-// Iniciando o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
