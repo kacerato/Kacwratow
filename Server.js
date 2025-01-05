@@ -3,7 +3,6 @@ const app = express();
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const fetch = require('node-fetch');
 
 // Porta do servidor
 const PORT = process.env.PORT || 3000;
@@ -18,6 +17,32 @@ app.use(express.static(path.join(__dirname, 'public')));
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
+}
+
+// Função para obter URL do stream usando streamlink
+function getStreamUrl(vodUrl) {
+  return new Promise((resolve, reject) => {
+    const streamlink = spawn('streamlink', ['--stream-url', vodUrl, 'best']);
+    let streamUrl = '';
+    let errorOutput = '';
+
+    streamlink.stdout.on('data', (data) => {
+      streamUrl += data.toString();
+    });
+
+    streamlink.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+      console.error('streamlink stderr:', data.toString());
+    });
+
+    streamlink.on('close', (code) => {
+      if (code === 0 && streamUrl) {
+        resolve(streamUrl.trim());
+      } else {
+        reject(new Error(`Falha ao obter URL do stream: ${errorOutput}`));
+      }
+    });
+  });
 }
 
 // Rota para a página inicial
@@ -35,25 +60,28 @@ app.post('/api/downloadvod', async (req, res) => {
 
   console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end, title });
 
-  // Nome do arquivo de saída
-  const sanitizedTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  const outputFile = path.join(tempDir, `${sanitizedTitle}_${vodId}_${start}_${end}.mp4`);
-
   try {
+    // Obter URL do stream
+    const streamUrl = await getStreamUrl(vodUrl);
+    console.log('URL do stream obtida:', streamUrl);
+
+    // Nome do arquivo de saída
+    const sanitizedTitle = (title || vodId).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const outputFile = path.join(tempDir, `${sanitizedTitle}_${start}_${end}.mp4`);
+
     // Comando ffmpeg para baixar e cortar o vídeo
     const ffmpegCommand = [
-      '-i', vodUrl,
+      '-i', streamUrl,
       '-ss', start,
       '-to', end,
       '-c', 'copy',
       outputFile
     ];
 
-    console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
+    console.log('Iniciando download com ffmpeg');
 
     const ffmpeg = spawn('ffmpeg', ffmpegCommand);
 
-    // Coletar logs de erro
     let errorLogs = '';
     ffmpeg.stderr.on('data', (data) => {
       errorLogs += data.toString();
@@ -62,7 +90,7 @@ app.post('/api/downloadvod', async (req, res) => {
 
     ffmpeg.on('close', (code) => {
       console.log('ffmpeg processo fechado com código:', code);
-      if (code === 0) {
+      if (code === 0 && fs.existsSync(outputFile)) {
         res.download(outputFile, (err) => {
           if (err) {
             console.error('Erro ao enviar o arquivo:', err);
