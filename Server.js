@@ -3,7 +3,7 @@ const app = express();
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
+const fetch = require('node-fetch');
 
 // Porta do servidor
 const PORT = process.env.PORT || 3000;
@@ -14,66 +14,49 @@ app.use(express.json());
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Criar diretório temp se não existir
+const tempDir = path.join(__dirname, 'temp');
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir);
+}
+
 // Rota para a página inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Função para obter o m3u8 do VOD
-function getVodM3U8(vodUrl) {
-  return new Promise((resolve, reject) => {
-    https.get(vodUrl, (response) => {
-      let data = '';
-      response.on('data', (chunk) => {
-        data += chunk;
-      });
-      response.on('end', () => {
-        const m3u8Url = data.match(/https:\/\/.*\.m3u8/);
-        if (m3u8Url) {
-          resolve(m3u8Url[0]);
-        } else {
-          reject(new Error('Não foi possível encontrar a URL do m3u8'));
-        }
-      });
-    }).on('error', (err) => {
-      reject(err);
-    });
-  });
-}
-
 // Rota para download de VODs
-app.get('/api/downloadvod', async (req, res) => {
-  const { vodId, vodUrl, start, end } = req.query;
+app.post('/api/downloadvod', async (req, res) => {
+  const { vodId, vodUrl, start, end, title } = req.body;
 
   if (!vodUrl) {
-    console.error('URL do VOD não fornecida');
     return res.status(400).send('URL do VOD não fornecida');
   }
 
-  console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end });
+  console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end, title });
+
+  // Nome do arquivo de saída
+  const sanitizedTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const outputFile = path.join(tempDir, `${sanitizedTitle}_${vodId}_${start}_${end}.mp4`);
 
   try {
-    const m3u8Url = await getVodM3U8(vodUrl);
-    console.log('URL do m3u8 obtida:', m3u8Url);
-
-    // Nome do arquivo de saída
-    const outputFile = path.join(__dirname, 'temp', `${vodId}_${start}_${end}.mp4`);
-
     // Comando ffmpeg para baixar e cortar o vídeo
     const ffmpegCommand = [
-      '-i', m3u8Url,
+      '-i', vodUrl,
       '-ss', start,
       '-to', end,
       '-c', 'copy',
       outputFile
     ];
 
-    console.log('Comando ffmpeg:', ffmpegCommand.join(' '));
+    console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
 
-    // Executando ffmpeg
     const ffmpeg = spawn('ffmpeg', ffmpegCommand);
 
+    // Coletar logs de erro
+    let errorLogs = '';
     ffmpeg.stderr.on('data', (data) => {
+      errorLogs += data.toString();
       console.error('ffmpeg stderr:', data.toString());
     });
 
@@ -91,12 +74,18 @@ app.get('/api/downloadvod', async (req, res) => {
           });
         });
       } else {
-        res.status(500).send('Erro ao processar VOD: ffmpeg retornou código ' + code);
+        res.status(500).send(`Erro ao processar VOD: ${errorLogs}`);
       }
     });
+
+    ffmpeg.on('error', (err) => {
+      console.error('Erro ao executar ffmpeg:', err);
+      res.status(500).send('Erro ao executar ffmpeg: ' + err.message);
+    });
+
   } catch (error) {
-    console.error('Erro ao obter URL do m3u8:', error);
-    res.status(500).send('Erro ao obter URL do m3u8: ' + error.message);
+    console.error('Erro ao processar download:', error);
+    res.status(500).send('Erro ao processar download: ' + error.message);
   }
 });
 
