@@ -52,22 +52,23 @@ app.get('/', (req, res) => {
 
 // Rota para download de VODs
 app.post('/api/downloadvod', async (req, res) => {
-  const { vodId, vodUrl, start, end, title } = req.body;
+  const { vodId, vodUrl, start, end } = req.body;
 
   if (!vodUrl) {
+    console.error('URL do VOD não fornecida');
     return res.status(400).send('URL do VOD não fornecida');
   }
 
-  console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end, title });
+  console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end });
 
   try {
     // Obter URL do stream
+    console.log('Obtendo URL do stream com streamlink...');
     const streamUrl = await getStreamUrl(vodUrl);
     console.log('URL do stream obtida:', streamUrl);
 
     // Nome do arquivo de saída
-    const sanitizedTitle = (title || vodId).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const outputFile = path.join(tempDir, `${sanitizedTitle}_${start}_${end}.mp4`);
+    const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
     // Comando ffmpeg para baixar e cortar o vídeo
     const ffmpegCommand = [
@@ -78,7 +79,7 @@ app.post('/api/downloadvod', async (req, res) => {
       outputFile
     ];
 
-    console.log('Iniciando download com ffmpeg');
+    console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
 
     const ffmpeg = spawn('ffmpeg', ffmpegCommand);
 
@@ -91,6 +92,7 @@ app.post('/api/downloadvod', async (req, res) => {
     ffmpeg.on('close', (code) => {
       console.log('ffmpeg processo fechado com código:', code);
       if (code === 0 && fs.existsSync(outputFile)) {
+        console.log('Arquivo criado com sucesso:', outputFile);
         res.download(outputFile, (err) => {
           if (err) {
             console.error('Erro ao enviar o arquivo:', err);
@@ -102,6 +104,7 @@ app.post('/api/downloadvod', async (req, res) => {
           });
         });
       } else {
+        console.error('Erro ao processar VOD. Código de saída:', code);
         res.status(500).send(`Erro ao processar VOD: ${errorLogs}`);
       }
     });
