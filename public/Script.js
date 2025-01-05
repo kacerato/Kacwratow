@@ -466,4 +466,3 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
     this.closest('.vod').classList.add('active');
   });
 });
-
