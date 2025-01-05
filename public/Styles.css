@@ -754,3 +754,43 @@ label {
 .select-vod-btn:hover {
   background-color: #772ce8;
 }
+
+/* Mantenha todos os estilos existentes e adicione/modifique os seguintes: */
+
+.select-vod-btn, .select-vod-download-btn {
+  background-color: #9146ff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-top: 10px;
+}
+
+.select-vod-btn:hover, .select-vod-download-btn:hover {
+  background-color: #772ce8;
+  transform: translateY(-2px);
+}
+
+.select-vod-btn:active, .select-vod-download-btn:active {
+  transform: translateY(0);
+}
+
+.vod.active .select-vod-btn, .vod.active .select-vod-download-btn {
+  background-color: #5c16c5;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #9146ff;
+}
+
+#download-status {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1000;
+}
+
