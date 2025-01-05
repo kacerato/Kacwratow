@@ -216,9 +216,13 @@ async function renderVods() {
 // Função para iniciar o download do VOD
 async function downloadVod(vodId, vodUrl, start, end) {
   try {
+    console.log('Iniciando download do VOD:', vodId, vodUrl, start, end);
     const response = await fetch(`/api/downloadvod?vodId=${vodId}&vodUrl=${encodeURIComponent(vodUrl)}&start=${start}&end=${end}`);
+    console.log('Resposta recebida:', response.status, response.statusText);
+    
     if (response.ok) {
       const blob = await response.blob();
+      console.log('Blob criado:', blob.size, 'bytes');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.style.display = 'none';
@@ -227,15 +231,19 @@ async function downloadVod(vodId, vodUrl, start, end) {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      console.log('Download iniciado no navegador');
       alert('Download iniciado!');
     } else {
-      throw new Error('Falha ao baixar o VOD');
+      const errorText = await response.text();
+      console.error('Resposta não-OK:', errorText);
+      throw new Error(`Falha ao baixar o VOD: ${errorText}`);
     }
   } catch (error) {
-    console.error('Erro ao baixar VOD:', error);
-    alert('Ocorreu um erro ao tentar baixar o VOD.');
+    console.error('Erro detalhado ao baixar VOD:', error);
+    alert('Ocorreu um erro ao tentar baixar o VOD. Por favor, verifique o console para mais detalhes.');
   }
 }
+
 
 // Função para exibir o Achievement
 function showAchievement(days, message, starClass) {
@@ -438,3 +446,4 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
   });
 });
 
+    
