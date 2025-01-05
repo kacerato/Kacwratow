@@ -86,6 +86,9 @@ app.post('/api/downloadvod', async (req, res) => {
       '-to', end,
       '-c', 'copy',
       '-v', 'verbose',
+      '-stats',
+      '-loglevel', 'debug',
+      '-f', 'mp4',
       outputFile
     ];
 
@@ -103,12 +106,26 @@ app.post('/api/downloadvod', async (req, res) => {
       console.log('ffmpeg stdout:', data.toString());
     });
 
+    // Adicionar um timeout de 5 minutos
+    const timeout = setTimeout(() => {
+      ffmpeg.kill('SIGTERM');
+      console.error('Timeout: O processo ffmpeg foi encerrado após 5 minutos');
+      res.status(500).send('Timeout: O processo de download demorou muito tempo');
+    }, 5 * 60 * 1000);
+
     ffmpeg.on('close', (code) => {
+      clearTimeout(timeout);
       console.log('ffmpeg processo fechado com código:', code);
       if (code === 0 && fs.existsSync(outputFile)) {
         console.log('Arquivo criado com sucesso:', outputFile);
         const fileStats = fs.statSync(outputFile);
         console.log('Tamanho do arquivo:', fileStats.size, 'bytes');
+
+        if (fileStats.size === 0) {
+          console.error('Arquivo criado está vazio');
+          res.status(500).send('Erro: O arquivo baixado está vazio');
+          return;
+        }
 
         res.download(outputFile, (err) => {
           if (err) {
@@ -126,6 +143,7 @@ app.post('/api/downloadvod', async (req, res) => {
     });
 
     ffmpeg.on('error', (err) => {
+      clearTimeout(timeout);
       console.error('Erro ao executar ffmpeg:', err);
       res.status(500).send('Erro ao executar ffmpeg: ' + err.message);
     });
