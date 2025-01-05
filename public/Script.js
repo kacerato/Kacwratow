@@ -215,18 +215,36 @@ async function renderVods() {
 
 async function getVodUrl(vodId) {
   try {
+    // Primeiro, obtemos os dados do VOD usando a API da Twitch
     const response = await fetch(`https://api.twitch.tv/helix/videos?id=${vodId}`, {
       headers: {
         'Client-ID': clientId,
         'Authorization': `Bearer ${accessToken}`
       }
     });
-    const data = await response.json();
-    if (data.data && data.data.length > 0) {
-      return data.data[0].url;
-    } else {
-      throw new Error('VOD não encontrado');
+
+    if (!response.ok) {
+      throw new Error('Falha ao obter informações do VOD da API da Twitch');
     }
+
+    const data = await response.json();
+
+    if (!data.data || data.data.length === 0) {
+      throw new Error('VOD não encontrado ou não está mais disponível');
+    }
+
+    // Obtemos a URL do VOD dos dados retornados
+    const vodData = data.data[0];
+
+    if (vodData.viewable !== 'public') {
+      throw new Error('Este VOD não está disponível publicamente');
+    }
+
+    return {
+      url: vodData.url,
+      duration: vodData.duration,
+      title: vodData.title
+    };
   } catch (error) {
     console.error('Erro ao obter URL do VOD:', error);
     throw error;
@@ -236,36 +254,73 @@ async function getVodUrl(vodId) {
 // Função para iniciar o download do VOD
 async function downloadVod(vodId, start, end) {
   try {
-    console.log('Obtendo URL do VOD:', vodId);
-    const vodUrl = await getVodUrl(vodId);
-    console.log('URL do VOD obtida:', vodUrl);
+    const vodInfo = await getVodUrl(vodId);
+    console.log('Informações do VOD obtidas:', vodInfo);
 
-    console.log('Iniciando download do VOD:', vodId, vodUrl, start, end);
-    const response = await fetch(`/api/downloadvod?vodId=${vodId}&vodUrl=${encodeURIComponent(vodUrl)}&start=${start}&end=${end}`);
-    console.log('Resposta recebida:', response.status, response.statusText);
+    // Validar os tempos de início e fim com a duração do VOD
+    const startSeconds = timeToSeconds(start);
+    const endSeconds = timeToSeconds(end);
+    const durationSeconds = parseTwitchDuration(vodInfo.duration);
 
-    if (response.ok) {
-      const blob = await response.blob();
-      console.log('Blob criado:', blob.size, 'bytes');
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `brkk_vod_${vodId}_${start}_${end}.mp4`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      console.log('Download iniciado no navegador');
-      alert('Download iniciado!');
-    } else {
+    if (startSeconds >= durationSeconds || endSeconds > durationSeconds) {
+      throw new Error('O intervalo de tempo selecionado está fora da duração do VOD');
+    }
+
+    const response = await fetch('/api/downloadvod', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        vodId,
+        vodUrl: vodInfo.url,
+        start,
+        end,
+        title: vodInfo.title
+      })
+    });
+
+    if (!response.ok) {
       const errorText = await response.text();
-      console.error('Resposta não-OK:', errorText);
       throw new Error(`Falha ao baixar o VOD: ${errorText}`);
     }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `brkk_vod_${vodId}_${start}_${end}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    console.log('Download iniciado no navegador');
+    alert('Download iniciado!');
+
   } catch (error) {
     console.error('Erro detalhado ao baixar VOD:', error);
-    alert('Ocorreu um erro ao tentar baixar o VOD. Por favor, verifique o console para mais detalhes.');
+    alert(`Erro ao baixar VOD: ${error.message}`);
   }
+}
+
+// Funções auxiliares para lidar com tempo
+function timeToSeconds(timeString) {
+  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+  return (hours * 3600) + (minutes * 60) + seconds;
+}
+
+function parseTwitchDuration(duration) {
+  // Formato da duração da Twitch: "1h2m3s"
+  let seconds = 0;
+  const hours = duration.match(/(\d+)h/);
+  const minutes = duration.match(/(\d+)m/);
+  const secs = duration.match(/(\d+)s/);
+
+  if (hours) seconds += parseInt(hours[1]) * 3600;
+  if (minutes) seconds += parseInt(minutes[1]) * 60;
+  if (secs) seconds += parseInt(secs[1]);
+
+  return seconds;
 }
 
 
