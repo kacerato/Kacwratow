@@ -1,25 +1,38 @@
 const express = require('express');
-const app = express();
-const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
+const app = express();
 
-// Porta do servidor
 const PORT = process.env.PORT || 3000;
 
-// Middleware para lidar com solicitações JSON
 app.use(express.json());
-
-// Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Criar diretório temp se não existir
 const tempDir = path.join(__dirname, 'temp');
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
 }
 
-// Função para obter URL do stream usando youtube-dl
+// Function to clean up temp files
+function cleanupTempFiles() {
+  fs.readdir(tempDir, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      fs.unlink(path.join(tempDir, file), err => {
+        if (err) console.error(`Error deleting file ${file}:`, err);
+      });
+    }
+  });
+}
+
+// Clean up temp files on server start
+cleanupTempFiles();
+
+// Schedule cleanup every hour
+setInterval(cleanupTempFiles, 3600000);
+
 function getStreamUrl(vodUrl) {
   return new Promise((resolve, reject) => {
     const youtubeDl = spawn('youtube-dl', ['-g', '-f', 'best', vodUrl]);
@@ -39,65 +52,38 @@ function getStreamUrl(vodUrl) {
       if (code === 0 && streamUrl) {
         resolve(streamUrl.trim());
       } else {
-        console.error('Falha ao obter URL do stream com youtube-dl. Tentando método alternativo...');
-        // Método alternativo usando curl
-        const curl = spawn('curl', ['-s', vodUrl]);
-        let htmlContent = '';
-
-        curl.stdout.on('data', (data) => {
-          htmlContent += data.toString();
-        });
-
-        curl.on('close', (curlCode) => {
-          if (curlCode === 0) {
-            const match = htmlContent.match(/https:\/\/[^"]*\.m3u8/);
-            if (match) {
-              console.log('URL do stream obtida com método alternativo:', match[0]);
-              resolve(match[0]);
-            } else {
-              reject(new Error(`Não foi possível encontrar a URL do stream no HTML`));
-            }
-          } else {
-            reject(new Error(`Falha ao obter conteúdo HTML: ${errorOutput}`));
-          }
-        });
+        reject(new Error(`Failed to get stream URL: ${errorOutput}`));
       }
     });
   });
 }
 
-// Rota para a página inicial
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Rota para download de VODs
 app.post('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.body;
 
   if (!vodUrl) {
     console.error('URL do VOD não fornecida');
-    return res.status(400).send('URL do VOD não fornecida');
+    return res.status(400).json({ error: 'URL do VOD não fornecida' });
   }
 
   console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end });
 
   try {
-    // Obter URL do stream
     console.log('Obtendo URL do stream com youtube-dl...');
     const streamUrl = await getStreamUrl(vodUrl);
     console.log('URL do stream obtida:', streamUrl);
 
-    // Nome do arquivo de saída
     const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
-    // Comando ffmpeg para baixar e cortar o vídeo
     const ffmpegCommand = [
-      '-i', streamUrl,
       '-ss', start,
+      '-i', streamUrl,
       '-to', end,
       '-c', 'copy',
-      '-v', 'verbose', // Adiciona logs verbosos
+      '-avoid_negative_ts', 'make_zero',
+      '-v', 'verbose',
+      '-stats',
+      '-loglevel', 'debug',
       outputFile
     ];
 
@@ -125,7 +111,9 @@ app.post('/api/downloadvod', async (req, res) => {
         res.download(outputFile, (err) => {
           if (err) {
             console.error('Erro ao enviar o arquivo:', err);
-            res.status(500).send('Erro ao baixar o VOD: ' + err.message);
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'Erro ao baixar o VOD: ' + err.message });
+            }
           }
           // Remover o arquivo temporário após o download
           fs.unlink(outputFile, (err) => {
@@ -134,58 +122,27 @@ app.post('/api/downloadvod', async (req, res) => {
         });
       } else {
         console.error('Erro ao processar VOD. Código de saída:', code);
-        res.status(500).send(`Erro ao processar VOD: ${errorLogs}`);
+        if (!res.headersSent) {
+          res.status(500).json({ error: `Erro ao processar VOD: ${errorLogs}` });
+        }
       }
     });
 
     ffmpeg.on('error', (err) => {
       console.error('Erro ao executar ffmpeg:', err);
-      res.status(500).send('Erro ao executar ffmpeg: ' + err.message);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Erro ao executar ffmpeg: ' + err.message });
+      }
     });
 
   } catch (error) {
     console.error('Erro ao processar download:', error);
-    res.status(500).send('Erro ao processar download: ' + error.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Erro ao processar download: ' + error.message });
+    }
   }
 });
 
-// Função para limpar arquivos temporários antigos
-function cleanupTempFiles() {
-  fs.readdir(tempDir, (err, files) => {
-    if (err) {
-      console.error('Erro ao ler diretório temporário:', err);
-      return;
-    }
-
-    const now = Date.now();
-    const oneHourAgo = now - 3600000; // 1 hora em milissegundos
-
-    files.forEach(file => {
-      const filePath = path.join(tempDir, file);
-      fs.stat(filePath, (err, stats) => {
-        if (err) {
-          console.error('Erro ao obter estatísticas do arquivo:', err);
-          return;
-        }
-
-        if (stats.mtimeMs < oneHourAgo) {
-          fs.unlink(filePath, err => {
-            if (err) {
-              console.error('Erro ao deletar arquivo temporário:', err);
-            } else {
-              console.log('Arquivo temporário deletado:', filePath);
-            }
-          });
-        }
-      });
-    });
-  });
-}
-
-// Executar limpeza a cada hora
-setInterval(cleanupTempFiles, 3600000);
-
-// Iniciando o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
