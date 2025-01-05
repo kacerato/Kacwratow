@@ -80,6 +80,7 @@ app.post('/api/downloadvod', async (req, res) => {
       '-i', streamUrl,
       '-to', end,
       '-c', 'copy',
+      '-avoid_negative_ts', 'make_zero',
       '-v', 'verbose',
       '-stats',
       '-loglevel', 'debug',
