@@ -78,7 +78,7 @@ app.post('/api/downloadvod', async (req, res) => {
     const ffmpegCommand = [
   '-ss', start,
   '-i', streamUrl,
-  '-t', (parseFloat(end) - parseFloat(start)).toString(),
+  '-to', end,
   '-c', 'copy',
   '-avoid_negative_ts', 'make_zero',
   '-v', 'verbose',
@@ -86,7 +86,6 @@ app.post('/api/downloadvod', async (req, res) => {
   '-loglevel', 'debug',
   outputFile
 ];
-
     console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
 
     const ffmpeg = spawn('ffmpeg', ffmpegCommand);
