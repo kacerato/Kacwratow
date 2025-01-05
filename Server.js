@@ -76,16 +76,16 @@ app.post('/api/downloadvod', async (req, res) => {
     const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
     const ffmpegCommand = [
-      '-ss', start,
-      '-i', streamUrl,
-      '-to', end,
-      '-c', 'copy',
-      '-avoid_negative_ts', 'make_zero',
-      '-v', 'verbose',
-      '-stats',
-      '-loglevel', 'debug',
-      outputFile
-    ];
+  '-ss', start,
+  '-i', streamUrl,
+  '-t', (parseFloat(end) - parseFloat(start)).toString(),
+  '-c', 'copy',
+  '-avoid_negative_ts', 'make_zero',
+  '-v', 'verbose',
+  '-stats',
+  '-loglevel', 'debug',
+  outputFile
+];
 
     console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
 
