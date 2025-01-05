@@ -59,10 +59,6 @@ function getStreamUrl(vodUrl) {
   });
 }
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 app.post('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.body;
 
@@ -88,45 +84,56 @@ app.post('/api/downloadvod', async (req, res) => {
       '-v', 'verbose',
       '-stats',
       '-loglevel', 'debug',
-      '-f', 'mp4',
-      'pipe:1'  // Saída para pipe ao invés de arquivo
+      outputFile
     ];
 
     console.log('Iniciando download com ffmpeg:', ffmpegCommand.join(' '));
 
     const ffmpeg = spawn('ffmpeg', ffmpegCommand);
 
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', `attachment; filename="brkk_vod_${vodId}_${start}_${end}.mp4"`);
-
-    ffmpeg.stdout.pipe(res);
-
+    let errorLogs = '';
     ffmpeg.stderr.on('data', (data) => {
+      errorLogs += data.toString();
       console.error('ffmpeg stderr:', data.toString());
+    });
+
+    ffmpeg.stdout.on('data', (data) => {
+      console.log('ffmpeg stdout:', data.toString());
     });
 
     ffmpeg.on('close', (code) => {
       console.log('ffmpeg processo fechado com código:', code);
-      if (code !== 0) {
+      if (code === 0 && fs.existsSync(outputFile)) {
+        console.log('Arquivo criado com sucesso:', outputFile);
+        const fileStats = fs.statSync(outputFile);
+        console.log('Tamanho do arquivo:', fileStats.size, 'bytes');
+
+        res.download(outputFile, (err) => {
+          if (err) {
+            console.error('Erro ao enviar o arquivo:', err);
+            res.status(500).json({ error: 'Erro ao baixar o VOD: ' + err.message });
+          }
+          // Remover o arquivo temporário após o download
+          fs.unlink(outputFile, (err) => {
+            if (err) console.error('Erro ao remover arquivo temporário:', err);
+          });
+        });
+      } else {
         console.error('Erro ao processar VOD. Código de saída:', code);
+        res.status(500).json({ error: `Erro ao processar VOD: ${errorLogs}` });
       }
     });
 
     ffmpeg.on('error', (err) => {
       console.error('Erro ao executar ffmpeg:', err);
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Erro ao executar ffmpeg: ' + err.message });
-      }
+      res.status(500).json({ error: 'Erro ao executar ffmpeg: ' + err.message });
     });
 
   } catch (error) {
     console.error('Erro ao processar download:', error);
-    if (!res.headersSent) {
-      res.status(500).json({ error: 'Erro ao processar download: ' + error.message });
-    }
+    res.status(500).json({ error: 'Erro ao processar download: ' + error.message });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
