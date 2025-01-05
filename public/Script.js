@@ -241,11 +241,8 @@ async function downloadVod(vodId, start, end) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Erro recebido do servidor:', errorData.error);
-      throw new Error(`Falha ao baixar o VOD: ${errorData.error}`);
+      throw new Error(errorData.error || 'Erro desconhecido ao baixar o VOD');
     }
-
-    statusElement.textContent = 'Processando download...';
 
     const blob = await response.blob();
     console.log('Tamanho do blob recebido:', blob.size, 'bytes');
