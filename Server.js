@@ -23,8 +23,11 @@ app.get('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.query;
 
   if (!vodUrl) {
-    return res.status(404).send('URL do VOD não fornecida');
+    console.error('URL do VOD não fornecida');
+    return res.status(400).send('URL do VOD não fornecida');
   }
+
+  console.log('Recebida solicitação de download:', { vodId, vodUrl, start, end });
 
   // Nome do arquivo de saída
   const outputFile = path.join(__dirname, 'temp', `${vodId}_${start}_${end}.mp4`);
@@ -38,15 +41,22 @@ app.get('/api/downloadvod', async (req, res) => {
     outputFile
   ];
 
+  console.log('Comando ffmpeg:', ffmpegCommand.join(' '));
+
   // Executando ffmpeg
   const ffmpeg = spawn('ffmpeg', ffmpegCommand);
 
+  ffmpeg.stderr.on('data', (data) => {
+    console.error('ffmpeg stderr:', data.toString());
+  });
+
   ffmpeg.on('close', (code) => {
+    console.log('ffmpeg processo fechado com código:', code);
     if (code === 0) {
       res.download(outputFile, (err) => {
         if (err) {
           console.error('Erro ao enviar o arquivo:', err);
-          res.status(500).send('Erro ao baixar o VOD');
+          res.status(500).send('Erro ao baixar o VOD: ' + err.message);
         }
         // Remover o arquivo temporário após o download
         fs.unlink(outputFile, (err) => {
@@ -54,7 +64,7 @@ app.get('/api/downloadvod', async (req, res) => {
         });
       });
     } else {
-      res.status(500).send('Erro ao processar VOD');
+      res.status(500).send('Erro ao processar VOD: ffmpeg retornou código ' + code);
     }
   });
 });
@@ -63,4 +73,3 @@ app.get('/api/downloadvod', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
