@@ -184,13 +184,12 @@ async function renderVods() {
     const vodElement = document.createElement("div");
     vodElement.classList.add("vod");
 
-    // Exibe a thumbnail, título e botões de assistir e selecionar para download
     vodElement.innerHTML = `
       <div class="vod-preview">
         <img src="${vod.thumbnail_url.replace('%{width}', '320').replace('%{height}', '180')}" alt="${vod.title}" class="vod-thumbnail" />
         <div class="vod-title">${vod.title}</div>
         <button class="select-vod-btn" data-vod-id="${vod.id}">Assistir</button>
-        <button class="select-vod-download-btn" data-vod-id="${vod.id}" data-vod-url="${vod.download_url}">Selecionar para Download</button>
+        <button class="select-vod-download-btn" data-vod-id="${vod.id}" data-vod-url="${vod.url}">Selecionar para Download</button>
       </div>
     `;
 
@@ -202,15 +201,15 @@ async function renderVods() {
     });
 
     const selectDownloadButton = vodElement.querySelector(".select-vod-download-btn");
-    selectDownloadButton.addEventListener("click", () => {
-      document.querySelectorAll('.vod').forEach(v => v.classList.remove('active'));
-      vodElement.classList.add('active');
-      document.getElementById('selected-vod-id').value = vod.id;
-      document.getElementById('selected-vod-url').value = vod.download_url;
-    });
+selectDownloadButton.addEventListener("click", () => {
+  document.querySelectorAll('.vod').forEach(v => v.classList.remove('active'));
+  vodElement.classList.add('active');
+  document.getElementById('selected-vod-id').value = vod.id;
+  document.getElementById('selected-vod-url').value = vod.url;
+});
 
-    vodsContainer.appendChild(vodElement);
-  });
+vodsContainer.appendChild(vodElement);
+});
 }
 
 // Função para iniciar o download do VOD
@@ -218,8 +217,7 @@ async function downloadVod(vodId, start, end) {
   try {
     console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
     const vodUrl = `https://www.twitch.tv/videos/${vodId}`;
-    
-    // Adicionar um elemento de status na página
+
     const statusElement = document.createElement('div');
     statusElement.id = 'download-status';
     statusElement.textContent = 'Iniciando download...';
@@ -264,10 +262,10 @@ async function downloadVod(vodId, start, end) {
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
-    
+
     console.log('Download iniciado no navegador');
     statusElement.textContent = 'Download concluído!';
-    setTimeout(() => statusElement.remove(), 5000);  // Remove o status após 5 segundos
+    setTimeout(() => statusElement.remove(), 5000);
 
   } catch (error) {
     console.error('Erro detalhado ao baixar VOD:', error);
