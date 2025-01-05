@@ -218,6 +218,12 @@ async function downloadVod(vodId, start, end) {
   try {
     console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
     const vodUrl = `https://www.twitch.tv/videos/${vodId}`;
+    
+    // Adicionar um elemento de status na página
+    const statusElement = document.createElement('div');
+    statusElement.id = 'download-status';
+    statusElement.textContent = 'Iniciando download...';
+    document.body.appendChild(statusElement);
 
     console.log('Enviando solicitação para o servidor...');
     const response = await fetch('/api/downloadvod', {
@@ -241,9 +247,14 @@ async function downloadVod(vodId, start, end) {
       throw new Error(`Falha ao baixar o VOD: ${errorText}`);
     }
 
-    console.log('Iniciando download do blob...');
+    statusElement.textContent = 'Processando download...';
+
     const blob = await response.blob();
-    console.log('Blob recebido. Tamanho:', blob.size, 'bytes');
+    console.log('Tamanho do blob recebido:', blob.size, 'bytes');
+
+    if (blob.size === 0) {
+      throw new Error('O arquivo baixado está vazio');
+    }
 
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -251,19 +262,25 @@ async function downloadVod(vodId, start, end) {
     a.href = url;
     a.download = `brkk_vod_${vodId}_${start}_${end}.mp4`;
     document.body.appendChild(a);
-
-    console.log('Iniciando o download no navegador...');
     a.click();
-
     window.URL.revokeObjectURL(url);
+    
     console.log('Download iniciado no navegador');
-    alert('Download iniciado!');
+    statusElement.textContent = 'Download concluído!';
+    setTimeout(() => statusElement.remove(), 5000);  // Remove o status após 5 segundos
 
   } catch (error) {
     console.error('Erro detalhado ao baixar VOD:', error);
     alert(`Erro ao baixar VOD: ${error.message}`);
+    const statusElement = document.getElementById('download-status');
+    if (statusElement) {
+      statusElement.textContent = `Erro: ${error.message}`;
+      statusElement.style.color = 'red';
+    }
   }
 }
+
+
 
 
 // Função para exibir o Achievement
@@ -466,3 +483,4 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
     this.closest('.vod').classList.add('active');
   });
 });
+
