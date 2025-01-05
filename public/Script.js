@@ -240,15 +240,20 @@ async function downloadVod(vodId, start, end) {
     console.log('Resposta recebida do servidor. Status:', response.status);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro recebido do servidor:', errorText);
-      throw new Error(`Falha ao baixar o VOD: ${errorText}`);
+      const errorData = await response.json();
+      console.error('Erro recebido do servidor:', errorData.error);
+      throw new Error(`Falha ao baixar o VOD: ${errorData.error}`);
     }
 
-    statusElement.textContent = 'Download iniciado. Verifique a barra de downloads do seu navegador.';
+    statusElement.textContent = 'Processando download...';
 
-    // Criar um link temporário para iniciar o download
     const blob = await response.blob();
+    console.log('Tamanho do blob recebido:', blob.size, 'bytes');
+
+    if (blob.size === 0) {
+      throw new Error('O arquivo baixado está vazio');
+    }
+
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
@@ -259,6 +264,7 @@ async function downloadVod(vodId, start, end) {
     window.URL.revokeObjectURL(url);
     
     console.log('Download iniciado no navegador');
+    statusElement.textContent = 'Download concluído!';
     setTimeout(() => statusElement.remove(), 5000);
 
   } catch (error) {
