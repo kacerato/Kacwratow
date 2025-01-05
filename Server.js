@@ -14,6 +14,25 @@ if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
 }
 
+// Function to clean up temp files
+function cleanupTempFiles() {
+  fs.readdir(tempDir, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      fs.unlink(path.join(tempDir, file), err => {
+        if (err) console.error(`Error deleting file ${file}:`, err);
+      });
+    }
+  });
+}
+
+// Clean up temp files on server start
+cleanupTempFiles();
+
+// Schedule cleanup every hour
+setInterval(cleanupTempFiles, 3600000);
+
 function getStreamUrl(vodUrl) {
   return new Promise((resolve, reject) => {
     const youtubeDl = spawn('youtube-dl', ['-g', '-f', 'best', vodUrl]);
@@ -33,27 +52,7 @@ function getStreamUrl(vodUrl) {
       if (code === 0 && streamUrl) {
         resolve(streamUrl.trim());
       } else {
-        console.error('Falha ao obter URL do stream com youtube-dl. Tentando método alternativo...');
-        const curl = spawn('curl', ['-s', vodUrl]);
-        let htmlContent = '';
-
-        curl.stdout.on('data', (data) => {
-          htmlContent += data.toString();
-        });
-
-        curl.on('close', (curlCode) => {
-          if (curlCode === 0) {
-            const match = htmlContent.match(/https:\/\/[^"]*\.m3u8/);
-            if (match) {
-              console.log('URL do stream obtida com método alternativo:', match[0]);
-              resolve(match[0]);
-            } else {
-              reject(new Error(`Não foi possível encontrar a URL do stream no HTML`));
-            }
-          } else {
-            reject(new Error(`Falha ao obter conteúdo HTML: ${errorOutput}`));
-          }
-        });
+        reject(new Error(`Failed to get stream URL: ${errorOutput}`));
       }
     });
   });
@@ -77,8 +76,8 @@ app.post('/api/downloadvod', async (req, res) => {
     const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
     const ffmpegCommand = [
-      '-i', streamUrl,
       '-ss', start,
+      '-i', streamUrl,
       '-to', end,
       '-c', 'copy',
       '-v', 'verbose',
@@ -111,7 +110,9 @@ app.post('/api/downloadvod', async (req, res) => {
         res.download(outputFile, (err) => {
           if (err) {
             console.error('Erro ao enviar o arquivo:', err);
-            res.status(500).json({ error: 'Erro ao baixar o VOD: ' + err.message });
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'Erro ao baixar o VOD: ' + err.message });
+            }
           }
           // Remover o arquivo temporário após o download
           fs.unlink(outputFile, (err) => {
@@ -120,18 +121,24 @@ app.post('/api/downloadvod', async (req, res) => {
         });
       } else {
         console.error('Erro ao processar VOD. Código de saída:', code);
-        res.status(500).json({ error: `Erro ao processar VOD: ${errorLogs}` });
+        if (!res.headersSent) {
+          res.status(500).json({ error: `Erro ao processar VOD: ${errorLogs}` });
+        }
       }
     });
 
     ffmpeg.on('error', (err) => {
       console.error('Erro ao executar ffmpeg:', err);
-      res.status(500).json({ error: 'Erro ao executar ffmpeg: ' + err.message });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Erro ao executar ffmpeg: ' + err.message });
+      }
     });
 
   } catch (error) {
     console.error('Erro ao processar download:', error);
-    res.status(500).json({ error: 'Erro ao processar download: ' + error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Erro ao processar download: ' + error.message });
+    }
   }
 });
 
