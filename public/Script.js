@@ -217,7 +217,7 @@ async function downloadVod(vodId, start, end) {
   try {
     console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
     const vodUrl = `https://www.twitch.tv/videos/${vodId}`;
-
+    
     const statusElement = document.createElement('div');
     statusElement.id = 'download-status';
     statusElement.textContent = 'Iniciando download...';
@@ -245,15 +245,10 @@ async function downloadVod(vodId, start, end) {
       throw new Error(`Falha ao baixar o VOD: ${errorText}`);
     }
 
-    statusElement.textContent = 'Processando download...';
+    statusElement.textContent = 'Download iniciado. Verifique a barra de downloads do seu navegador.';
 
+    // Criar um link temporário para iniciar o download
     const blob = await response.blob();
-    console.log('Tamanho do blob recebido:', blob.size, 'bytes');
-
-    if (blob.size === 0) {
-      throw new Error('O arquivo baixado está vazio');
-    }
-
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
@@ -262,9 +257,8 @@ async function downloadVod(vodId, start, end) {
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
-
+    
     console.log('Download iniciado no navegador');
-    statusElement.textContent = 'Download concluído!';
     setTimeout(() => statusElement.remove(), 5000);
 
   } catch (error) {
@@ -277,8 +271,6 @@ async function downloadVod(vodId, start, end) {
     }
   }
 }
-
-
 
 
 // Função para exibir o Achievement
