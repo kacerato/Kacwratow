@@ -213,13 +213,37 @@ async function renderVods() {
   });
 }
 
-// Função para iniciar o download do VOD
-async function downloadVod(vodId, vodUrl, start, end) {
+async function getVodUrl(vodId) {
   try {
+    const response = await fetch(`https://api.twitch.tv/helix/videos?id=${vodId}`, {
+      headers: {
+        'Client-ID': clientId,
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    const data = await response.json();
+    if (data.data && data.data.length > 0) {
+      return data.data[0].url;
+    } else {
+      throw new Error('VOD não encontrado');
+    }
+  } catch (error) {
+    console.error('Erro ao obter URL do VOD:', error);
+    throw error;
+  }
+}
+
+// Função para iniciar o download do VOD
+async function downloadVod(vodId, start, end) {
+  try {
+    console.log('Obtendo URL do VOD:', vodId);
+    const vodUrl = await getVodUrl(vodId);
+    console.log('URL do VOD obtida:', vodUrl);
+
     console.log('Iniciando download do VOD:', vodId, vodUrl, start, end);
     const response = await fetch(`/api/downloadvod?vodId=${vodId}&vodUrl=${encodeURIComponent(vodUrl)}&start=${start}&end=${end}`);
     console.log('Resposta recebida:', response.status, response.statusText);
-    
+
     if (response.ok) {
       const blob = await response.blob();
       console.log('Blob criado:', blob.size, 'bytes');
@@ -420,9 +444,8 @@ updateStatus();
 // Evento de download VOD
 document.getElementById('download-vod').addEventListener('click', () => {
   const vodId = document.getElementById('selected-vod-id').value;
-  const vodUrl = document.getElementById('selected-vod-url').value;
-  
-  if (!vodId || !vodUrl) {
+
+  if (!vodId) {
     alert('Por favor, selecione um VOD para baixar.');
     return;
   }
@@ -435,7 +458,7 @@ document.getElementById('download-vod').addEventListener('click', () => {
     return;
   }
 
-  downloadVod(vodId, vodUrl, startTime, endTime);
+  downloadVod(vodId, startTime, endTime);
 });
 
 // Adicionar esta função para marcar um VOD como ativo ao clicar no botão de seleção
@@ -446,4 +469,3 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
   });
 });
 
-    
