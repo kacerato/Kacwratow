@@ -1,14 +1,12 @@
 const clientId = "v2h2uedgpuw2fz35wtn942e9vsf2c9";
 const accessToken = "st6jpeqk6jidreb6cnlw08zn5fwjbk";
-const username = "brkk"; // Nome de usuário do canal do BRKK na Twitch
+const username = "brkk";
 
-// URLs da API
 const twitchUserApi = `https://api.twitch.tv/helix/users?login=${username}`;
 const twitchStreamApi = `https://api.twitch.tv/helix/streams?user_login=${username}`;
 let twitchVideosApi;
 let twitchClipsApi;
 
-// Função para obter o ID do usuário
 async function getUserId() {
   try {
     const response = await fetch(twitchUserApi, {
@@ -31,7 +29,6 @@ async function getUserId() {
   }
 }
 
-// Função para buscar a última transmissão salva
 async function getLastStreamDate(userId) {
   try {
     twitchVideosApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive`;
@@ -55,17 +52,16 @@ async function getLastStreamDate(userId) {
   }
 }
 
-// Função para calcular a diferença em dias
 function calculateDaysDifference(lastStreamDate) {
   const currentDate = new Date();
   const diffTime = Math.abs(currentDate - lastStreamDate);
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte para dias
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
 async function getClips(userId) {
   try {
     const now = new Date();
-    const last24Hours = new Date(now.setHours(now.getHours() - 24)).toISOString(); // Últimas 24 horas
+    const last24Hours = new Date(now.setHours(now.getHours() - 24)).toISOString();
     twitchClipsApi = `https://api.twitch.tv/helix/clips?broadcaster_id=${userId}&first=10&started_at=${last24Hours}`;
 
     const response = await fetch(twitchClipsApi, {
@@ -83,17 +79,16 @@ async function getClips(userId) {
   }
 }
 
-// Função para renderizar os clipes no DOM
 async function renderClips() {
   const userId = await getUserId();
   if (!userId) return;
 
   const clips = await getClips(userId);
   const clipsContainer = document.getElementById("clips-container");
-  clipsContainer.innerHTML = ""; // Limpa o conteúdo anterior
+  clipsContainer.innerHTML = "";
 
   const mainPlayer = document.getElementById("main-playerclips");
-  mainPlayer.innerHTML = ""; // Limpa o conteúdo anterior do player principal
+  mainPlayer.innerHTML = "";
   const mainPlayerIframe = document.createElement("iframe");
   mainPlayerIframe.setAttribute("frameborder", "0");
   mainPlayerIframe.setAttribute("allowfullscreen", "");
@@ -105,7 +100,6 @@ async function renderClips() {
     return;
   }
 
-  // Define o primeiro clipe como o player principal
   mainPlayerIframe.src = `${clips[0].embed_url}&parent=localhost&parent=brkk.netlify.app`;
   mainPlayer.appendChild(mainPlayerIframe);
 
@@ -113,16 +107,14 @@ async function renderClips() {
     const clipElement = document.createElement("div");
     clipElement.classList.add("clip");
 
-    // Exibe a thumbnail, título e botão de assistir
     clipElement.innerHTML = `
-            <div class="clip-preview">
-                <img src="${clip.thumbnail_url}" alt="${clip.title}" class="clip-thumbnail" />
-                <div class="clip-title">${clip.title}</div>
-                <button class="select-clip-btn" data-clip-url="${clip.embed_url}">Assistir</button>
-            </div>
-        `;
+      <div class="clip-preview">
+        <img src="${clip.thumbnail_url}" alt="${clip.title}" class="clip-thumbnail" />
+        <div class="clip-title">${clip.title}</div>
+        <button class="select-clip-btn" data-clip-url="${clip.embed_url}">Assistir</button>
+      </div>
+    `;
 
-    // Adiciona evento de clique para trocar o player principal
     const selectButton = clipElement.querySelector(".select-clip-btn");
     selectButton.addEventListener("click", () => {
       mainPlayerIframe.src = `${selectButton.dataset.clipUrl}&parent=localhost&parent=brkk.netlify.app`;
@@ -132,7 +124,6 @@ async function renderClips() {
   });
 }
 
-// Função para buscar os últimos VODs
 async function getVods(userId) {
   try {
     const vodsApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive&first=3`;
@@ -154,29 +145,27 @@ async function getVods(userId) {
   }
 }
 
-// Função para renderizar os VODs no DOM
 async function renderVods() {
   const userId = await getUserId();
   if (!userId) return;
 
   const vods = await getVods(userId);
   const vodsContainer = document.getElementById("vods-container");
-  vodsContainer.innerHTML = ""; // Limpa o conteúdo anterior
+  vodsContainer.innerHTML = "";
 
   const mainPlayer = document.getElementById("main-player");
-  mainPlayer.innerHTML = ""; // Limpa o conteúdo anterior do player principal
+  mainPlayer.innerHTML = "";
   const mainPlayerIframe = document.createElement("iframe");
   mainPlayerIframe.setAttribute("frameborder", "0");
   mainPlayerIframe.setAttribute("allowfullscreen", "");
-  mainPlayerIframe.setAttribute("width", "100%");
-  mainPlayerIframe.setAttribute("height", "300px");
+  mainPlayerIframe.style.width = "100%";
+  mainPlayerIframe.style.height = "450px"; 
 
   if (vods.length === 0) {
     vodsContainer.textContent = "Nenhuma live encontrada.";
     return;
   }
 
-  // Define o primeiro VOD como o player principal
   mainPlayerIframe.src = `https://player.twitch.tv/?video=${vods[0].id}&parent=localhost&parent=brkk.netlify.app`;
   mainPlayer.appendChild(mainPlayerIframe);
 
@@ -201,18 +190,52 @@ async function renderVods() {
     });
 
     const selectDownloadButton = vodElement.querySelector(".select-vod-download-btn");
-selectDownloadButton.addEventListener("click", () => {
-  document.querySelectorAll('.vod').forEach(v => v.classList.remove('active'));
-  vodElement.classList.add('active');
-  document.getElementById('selected-vod-id').value = vod.id;
-  document.getElementById('selected-vod-url').value = vod.url;
-});
+    selectDownloadButton.addEventListener("click", () => {
+      document.querySelectorAll('.vod').forEach(v => v.classList.remove('active'));
+      vodElement.classList.add('active');
+      document.getElementById('selected-vod-id').value = vod.id;
+      document.getElementById('selected-vod-url').value = vod.url;
+    });
 
-vodsContainer.appendChild(vodElement);
-});
+    vodsContainer.appendChild(vodElement);
+  });
+  adjustPlayerSize();
 }
 
-// Função para iniciar o download do VOD
+function adjustPlayerSize() {
+  const mainPlayer = document.getElementById("main-player");
+  const iframe = mainPlayer.querySelector("iframe");
+  if (iframe) {
+    const width = mainPlayer.offsetWidth;
+    const height = Math.min(450, width * 9 / 16); 
+    iframe.style.height = `${height}px`;
+  }
+}
+
+function updateProgressBar(vodId) {
+  const progressBar = document.getElementById('download-progress');
+  const progressBarFill = progressBar.querySelector('.progress-bar-fill');
+  
+  function checkProgress() {
+    fetch(`/api/downloadprogress/${vodId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.progress) {
+          const percent = (data.progress.current / data.progress.duration) * 100;
+          progressBarFill.style.width = `${percent}%`;
+          if (percent < 100) {
+            setTimeout(checkProgress, 1000);
+          } else {
+            progressBar.classList.add('hidden');
+          }
+        }
+      });
+  }
+  
+  progressBar.classList.remove('hidden');
+  checkProgress();
+}
+
 async function downloadVod(vodId, start, end) {
   try {
     console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
@@ -222,6 +245,8 @@ async function downloadVod(vodId, start, end) {
     statusElement.id = 'download-status';
     statusElement.textContent = 'Iniciando download...';
     document.body.appendChild(statusElement);
+
+    updateProgressBar(vodId);
 
     console.log('Enviando solicitação para o servidor...');
     const response = await fetch('/api/downloadvod', {
@@ -240,17 +265,14 @@ async function downloadVod(vodId, start, end) {
     console.log('Resposta recebida do servidor. Status:', response.status);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Erro desconhecido ao baixar o VOD');
+      const errorText = await response.text();
+      console.error('Erro recebido do servidor:', errorText);
+      throw new Error(`Falha ao baixar o VOD: ${errorText}`);
     }
+
+    statusElement.textContent = 'Download iniciado. Verifique a barra de downloads do seu navegador.';
 
     const blob = await response.blob();
-    console.log('Tamanho do blob recebido:', blob.size, 'bytes');
-
-    if (blob.size === 0) {
-      throw new Error('O arquivo baixado está vazio');
-    }
-
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
@@ -261,7 +283,6 @@ async function downloadVod(vodId, start, end) {
     window.URL.revokeObjectURL(url);
     
     console.log('Download iniciado no navegador');
-    statusElement.textContent = 'Download concluído!';
     setTimeout(() => statusElement.remove(), 5000);
 
   } catch (error) {
@@ -275,8 +296,6 @@ async function downloadVod(vodId, start, end) {
   }
 }
 
-
-// Função para exibir o Achievement
 function showAchievement(days, message, starClass) {
   const achievementsContainer = document.getElementById('achievements-container');
   const achievementText = achievementsContainer.querySelector('.achievement-text');
@@ -296,7 +315,6 @@ function showAchievement(days, message, starClass) {
   achievementsContainer.classList.remove('hidden');
 }
 
-// Função para verificar e exibir Achievements
 function checkAchievements(daysOffline) {
   let achievementMessage = "";
   let achievementDays = 0;
@@ -330,7 +348,6 @@ function checkAchievements(daysOffline) {
   }
 }
 
-// Função para atualizar o status
 async function updateStatus() {
   try {
     const userId = await getUserId();
@@ -356,7 +373,6 @@ async function updateStatus() {
       const viewersCount = document.getElementById("viewers-count");
 
       if (streamData && streamData.data && streamData.data.length > 0) {
-        // Canal está ao vivo
         liveStatus.classList.remove("hidden");
         statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
         statusMessage.classList.add("status-highlight");
@@ -370,7 +386,6 @@ async function updateStatus() {
         viewersCounter.classList.remove("hidden");
         document.getElementById('achievements-container').classList.add('hidden');
       } else {
-        // Canal está offline
         liveStatus.classList.add("hidden");
         twitchEmbed.classList.add("hidden");
         animatedArrow.classList.add("hidden");
@@ -383,7 +398,6 @@ async function updateStatus() {
           document.getElementById("days-offline").textContent = daysOffline;
           viewersCounter.classList.add("hidden");
 
-          // Verifica e exibe Achievements
           checkAchievements(daysOffline);
         }
         statusMessage.classList.remove("status-highlight");
@@ -394,7 +408,6 @@ async function updateStatus() {
   }
 }
 
-// Alternância entre abas
 function setupTabs() {
   const statusTab = document.getElementById("status-tab");
   const clipsTab = document.getElementById("clips-tab");
@@ -444,11 +457,9 @@ function setupTabs() {
   });
 }
 
-// Inicialização
 setupTabs();
 updateStatus();
 
-// Evento de download VOD
 document.getElementById('download-vod').addEventListener('click', () => {
   const vodId = document.getElementById('selected-vod-id').value;
 
@@ -469,11 +480,12 @@ document.getElementById('download-vod').addEventListener('click', () => {
   downloadVod(vodId, startTime, endTime);
 });
 
-// Adicionar esta função para marcar um VOD como ativo ao clicar no botão de seleção
 document.querySelectorAll('.select-vod-btn').forEach(button => {
   button.addEventListener('click', function() {
     document.querySelectorAll('.vod').forEach(vod => vod.classList.remove('active'));
     this.closest('.vod').classList.add('active');
   });
 });
+
+window.addEventListener("resize", adjustPlayerSize);
 
