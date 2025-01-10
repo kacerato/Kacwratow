@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BRKK | Status e Clips</title>
-  <link rel="stylesheet" type="text/css" href="Styles.css">
+  <link rel="Stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -54,27 +54,23 @@
       </div>
     </div>
 
-<div id="vods-section" class="tab-content hidden">
-  <h2>Últimas Lives</h2>
-  <div id="main-player">
-    <iframe id="main-player-iframe" src="" frameborder="0" allowfullscreen></iframe>
-  </div>
-  <div id="vods-container">
-    <p>Carregando as últimas lives...</p>
-  </div>
-  <div id="vod-download-interface" class="vod-download-interface">
-    <div class="time-selection">
-      <div class="time-control">
-        <label for="start-time">Início:</label>
-        <input type="time" id="start-time" step="1" class="time-input" required>
-      </div>
-      <div class="time-control">
-        <label for="end-time">Fim:</label>
-        <input type="time" id="end-time" step="1" class="time-input" required>
-      </div>
+<div id="vods-section" class="section hidden">
+  <h2>Lives Recentes</h2>
+  <div id="main-player"></div>
+  <div id="vods-container"></div>
+  <div id="vod-download-interface">
+    <h3>Download de VOD</h3>
+    <div class="vod-download-controls">
       <input type="hidden" id="selected-vod-id">
-<input type="hidden" id="selected-vod-url">
-      <button id="download-vod" class="download-btn">Baixar Trecho</button>
+      <input type="hidden" id="selected-vod-url">
+      <label for="start-time">Início:</label>
+      <input type="time" id="start-time" step="1">
+      <label for="end-time">Fim:</label>
+      <input type="time" id="end-time" step="1">
+      <button id="download-vod">Baixar VOD</button>
+    </div>
+    <div id="download-progress" class="progress-bar hidden">
+      <div class="progress-bar-fill"></div>
     </div>
   </div>
 </div>
@@ -118,7 +114,7 @@
     <p>Feito Por um hater do BRKK</p>
   </footer>
 
-  <script src="Script.js"></script>
+  <script src="script.js"></script>
 </body>
 
 </html>
