@@ -14,7 +14,6 @@ if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir);
 }
 
-// Function to clean up temp files
 function cleanupTempFiles() {
   fs.readdir(tempDir, (err, files) => {
     if (err) throw err;
@@ -27,10 +26,8 @@ function cleanupTempFiles() {
   });
 }
 
-// Clean up temp files on server start
 cleanupTempFiles();
 
-// Schedule cleanup every hour
 setInterval(cleanupTempFiles, 3600000);
 
 function getStreamUrl(vodUrl) {
@@ -57,6 +54,13 @@ function getStreamUrl(vodUrl) {
     });
   });
 }
+
+let downloadProgress = {};
+
+app.get('/api/downloadprogress/:vodId', (req, res) => {
+  const vodId = req.params.vodId;
+  res.json({ progress: downloadProgress[vodId] || 0 });
+});
 
 app.post('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.body;
@@ -95,6 +99,24 @@ app.post('/api/downloadvod', async (req, res) => {
     ffmpeg.stderr.on('data', (data) => {
       errorLogs += data.toString();
       console.error('ffmpeg stderr:', data.toString());
+
+      const output = data.toString();
+      const durationMatch = output.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.\d{2}/);
+      const timeMatch = output.match(/time=(\d{2}):(\d{2}):(\d{2})\.\d{2}/);
+
+      if (durationMatch && !downloadProgress[vodId]) {
+        const [, durationHours, durationMinutes, durationSeconds] = durationMatch;
+        downloadProgress[vodId] = {
+          duration: (parseInt(durationHours) * 3600 + parseInt(durationMinutes) * 60 + parseInt(durationSeconds)),
+          current: 0
+        };
+      }
+
+      if (timeMatch && downloadProgress[vodId]) {
+        const [, hours, minutes, seconds] = timeMatch;
+        const currentTime = parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+        downloadProgress[vodId].current = currentTime;
+      }
     });
 
     ffmpeg.stdout.on('data', (data) => {
@@ -115,7 +137,6 @@ app.post('/api/downloadvod', async (req, res) => {
               res.status(500).json({ error: 'Erro ao baixar o VOD: ' + err.message });
             }
           }
-          // Remover o arquivo temporário após o download
           fs.unlink(outputFile, (err) => {
             if (err) console.error('Erro ao remover arquivo temporário:', err);
           });
@@ -126,6 +147,7 @@ app.post('/api/downloadvod', async (req, res) => {
           res.status(500).json({ error: `Erro ao processar VOD: ${errorLogs}` });
         }
       }
+      delete downloadProgress[vodId];
     });
 
     ffmpeg.on('error', (err) => {
@@ -133,6 +155,7 @@ app.post('/api/downloadvod', async (req, res) => {
       if (!res.headersSent) {
         res.status(500).json({ error: 'Erro ao executar ffmpeg: ' + err.message });
       }
+      delete downloadProgress[vodId];
     });
 
   } catch (error) {
