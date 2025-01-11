@@ -228,7 +228,14 @@ function updateProgressBar(vodId) {
           } else {
             progressBar.style.display = 'none';
           }
+        } else {
+          // If no progress data, check again after a short delay
+          setTimeout(checkProgress, 1000);
         }
+      })
+      .catch(error => {
+        console.error('Error fetching progress:', error);
+        setTimeout(checkProgress, 1000);
       });
   }
 
