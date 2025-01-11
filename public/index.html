@@ -54,25 +54,33 @@
       </div>
     </div>
 
-<div id="vods-section" class="section hidden">
-  <h2>Lives Recentes</h2>
-  <div id="main-player"></div>
-  <div id="vods-container"></div>
-  <div id="vod-download-interface">
-    <h3>Download de VOD</h3>
-    <div class="vod-download-controls">
+<div id="vods-section" class="tab-content hidden">
+  <h2>Últimas Lives</h2>
+  <div id="main-player">
+    <iframe id="main-player-iframe" src="" frameborder="0" allowfullscreen></iframe>
+  </div>
+  <div id="vods-container">
+    <p>Carregando as últimas lives...</p>
+  </div>
+  <div id="vod-download-interface" class="vod-download-interface">
+  <div id="download-progress" class="progress-bar hidden">
+    <div class="progress-bar-fill"></div>
+  </div
+    <div class="time-selection">
+      <div class="time-control">
+        <label for="start-time">Início:</label>
+        <input type="time" id="start-time" step="1" class="time-input" required>
+      </div>
+      <div class="time-control">
+        <label for="end-time">Fim:</label>
+        <input type="time" id="end-time" step="1" class="time-input" required>
+      </div>
       <input type="hidden" id="selected-vod-id">
-      <input type="hidden" id="selected-vod-url">
-      <label for="start-time">Início:</label>
-      <input type="time" id="start-time" step="1">
-      <label for="end-time">Fim:</label>
-      <input type="time" id="end-time" step="1">
-      <button id="download-vod">Baixar VOD</button>
-    </div>
-    <div id="download-progress" class="progress-bar hidden">
-      <div class="progress-bar-fill"></div>
+<input type="hidden" id="selected-vod-url">
+      <button id="download-vod" class="download-btn">Baixar Trecho</button>
     </div>
   </div>
+  
 </div>
     
 
