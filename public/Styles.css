@@ -15,6 +15,14 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
+    font-size: 16px; /* Update: Added font-size */
+    line-height: 1.6; /* Update: Added line-height */
+}
+
+.container { /* Update: Added container class */
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 20px;
 }
 
 header {
@@ -49,7 +57,7 @@ main {
     justify-content: flex-start;
     align-items: center;
     text-align: center;
-    padding: 20px;
+    padding: 40px 0; /* Update: Modified padding */
     gap: 20px;
 }
 
@@ -391,7 +399,7 @@ nav button.active {
 
 #player-main iframe {
     width: 100%;
-    height: 450px;
+    height: 500px; /* Update: Modified iframe height */
     border: none;
 }
 
@@ -491,7 +499,7 @@ nav button.active {
   align-items: center;
   gap: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  font-size: 18x;
+  font-size: 18px;
 }
 
 .achievement-icon {
@@ -645,7 +653,7 @@ nav button.active {
 
 @media (max-width: 768px) {
   body {
-    font-size: 12px;
+    font-size: 14px; /* Update: Modified font-size for 768px */
   }
 
   h1 {
@@ -654,6 +662,23 @@ nav button.active {
 
   h2 {
     font-size: 1.3rem;
+  }
+
+  .container { /* Update: Added media query for container */
+    padding: 0 10px;
+  }
+
+  main { /* Update: Added media query for main */
+    padding: 20px 0;
+  }
+
+  #main-player iframe,
+  #main-playerclips iframe { /* Update: Added media query for iframes */
+    height: 300px;
+  }
+
+  .vod, .clip { /* Update: Added media query for vod and clip width */
+    width: calc(50% - 10px);
   }
 }
 
@@ -669,7 +694,36 @@ nav button.active {
   h2 {
     font-size: 1.1rem;
   }
+
+  .vod, .clip { /* Update: Added media query for vod and clip width */
+    width: 100%;
+  }
+
+  .time-selection { /* Update: Added media query for time-selection */
+    flex-direction: column;
+    gap: 10px;
+  }
 }
+
+@media (min-width: 1200px) { /* Update: Added media query for larger screens */
+  body {
+    font-size: 18px;
+  }
+
+  .container {
+    max-width: 1400px;
+  }
+
+  #main-player iframe,
+  #main-playerclips iframe {
+    height: 600px;
+  }
+
+  .vod, .clip {
+    width: calc(33.333% - 20px);
+  }
+}
+
 
 /* Melhorando a interface de seleção de tempo */
 /* Estilo melhorado para a seleção de tempo */
@@ -739,25 +793,7 @@ label {
 }
 
 /* Adicionar os seguintes estilos para o botão de seleção de VOD */
-.select-vod-btn {
-  background-color: #9146ff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 10px;
-}
-
-.select-vod-btn:hover {
-  background-color: #772ce8;
-}
-
-/* Mantenha todos os estilos existentes e adicione/modifique os seguintes: */
-
-.select-vod-btn, .select-vod-download-btn {
+.select-vod-download-btn {
   background-color: #9146ff;
   color: white;
   border: none;
@@ -769,16 +805,16 @@ label {
   margin-top: 10px;
 }
 
-.select-vod-btn:hover, .select-vod-download-btn:hover {
+.select-vod-downlaod-btn:hover {
   background-color: #772ce8;
   transform: translateY(-2px);
 }
 
-.select-vod-btn:active, .select-vod-download-btn:active {
+.select-vod-download-btn:active {
   transform: translateY(0);
 }
 
-.vod.active .select-vod-btn, .vod.active .select-vod-download-btn {
+.vod.active .select-vod-download-btn {
   background-color: #5c16c5;
   box-shadow: 0 0 0 2px white, 0 0 0 4px #9146ff;
 }
@@ -793,3 +829,136 @@ label {
   border-radius: 5px;
   z-index: 1000;
 }
+
+/* Estilos para a barra de download */
+.progress-bar { /* Update: Added progress bar styles */
+  width: 100%;
+  height: 20px;
+  background-color: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.progress-bar-fill { /* Update: Added progress bar fill styles */
+  height: 100%;
+  background-color: #9146ff;
+  width: 0%;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Adicione os seguintes estilos após o seletor .vod-download-interface */
+.time-selection {
+  display: flex;
+  gap: 20px;
+  background: linear-gradient(145deg, #2a2a2a, #333333);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+}
+
+.time-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.time-input {
+  width: 150px;
+  padding: 12px;
+  background: #1e1e1e;
+  border: 2px solid #9146ff;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.time-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(145, 70, 255, 0.3);
+}
+
+label {
+  color: #f4f4f5;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.select-vod-download-btn, .download-btn {
+  background-color: #9146ff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-top: 15px;
+}
+
+.select-vod-download-btn:hover, .download-btn:hover {
+  background-color: #7a3dd6;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(145, 70, 255, 0.3);
+}
+
+.select-vod-download-btn:active, .download-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(145, 70, 255, 0.2);
+}
+
+.select-vod-download-btn::before, .download-btn::before {
+  content: '🎬';
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.download-btn::before {
+  content: '📥';
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(145, 70, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(145, 70, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(145, 70, 255, 0);
+  }
+}
+
+.vod.active .select-vod-download-btn {
+  animation: pulse 1.5s infinite;
+}
+
+/* Adicione os seguintes estilos para melhorar a responsividade */
+@media (max-width: 768px) {
+  .time-selection {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .time-control {
+    width: 100%;
+    align-items: center;
+  }
+
+  .time-input {
+    width: 100%;
+  }
+
+  .select-vod-download-btn, .download-btn {
+    width: 100%;
+  }
+}
+
