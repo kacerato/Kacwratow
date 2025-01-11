@@ -145,6 +145,18 @@ async function getVods(userId) {
   }
 }
 
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function parseTime(timeString) {
+  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
 async function renderVods() {
   const userId = await getUserId();
   if (!userId) return;
@@ -177,8 +189,9 @@ async function renderVods() {
       <div class="vod-preview">
         <img src="${vod.thumbnail_url.replace('%{width}', '320').replace('%{height}', '180')}" alt="${vod.title}" class="vod-thumbnail" />
         <div class="vod-title">${vod.title}</div>
+        <div class="vod-duration">Duração: ${formatTime(vod.duration)}</div>
         <button class="select-vod-btn" data-vod-id="${vod.id}">Assistir</button>
-        <button class="select-vod-download-btn" data-vod-id="${vod.id}" data-vod-url="${vod.url}">Selecionar para Download</button>
+        <button class="select-vod-download-btn" data-vod-id="${vod.id}" data-vod-url="${vod.url}" data-vod-duration="${vod.duration}">Selecionar para Download</button>
       </div>
     `;
 
@@ -195,6 +208,17 @@ async function renderVods() {
       vodElement.classList.add('active');
       document.getElementById('selected-vod-id').value = vod.id;
       document.getElementById('selected-vod-url').value = vod.url;
+      
+      const durationInSeconds = parseInt(selectDownloadButton.dataset.vodDuration);
+      document.getElementById('vod-total-duration').textContent = formatTime(durationInSeconds);
+      
+      const startTimeInput = document.getElementById('start-time');
+      const endTimeInput = document.getElementById('end-time');
+      startTimeInput.max = formatTime(durationInSeconds - 1);
+      endTimeInput.max = formatTime(durationInSeconds);
+      
+      startTimeInput.value = '00:00:00';
+      endTimeInput.value = formatTime(Math.min(durationInSeconds, 120)); // Default to 2 minutes or full duration if shorter
     });
 
     vodsContainer.appendChild(vodElement);
@@ -243,9 +267,9 @@ function updateProgressBar(vodId) {
   checkProgress();
 }
 
-async function downloadVod(vodId, start, end) {
+async function downloadVod(vodId, startSeconds, endSeconds) {
   try {
-    console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
+    console.log('Iniciando download do VOD:', vodId, 'de', formatTime(startSeconds), 'a', formatTime(endSeconds));
     const vodUrl = `https://www.twitch.tv/videos/${vodId}`;
     
     let statusElement = document.getElementById('download-status');
@@ -278,8 +302,8 @@ async function downloadVod(vodId, start, end) {
       body: JSON.stringify({
         vodId,
         vodUrl,
-        start,
-        end
+        start: startSeconds,
+        end: endSeconds
       })
     });
 
@@ -298,7 +322,7 @@ async function downloadVod(vodId, start, end) {
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = `brkk_vod_${vodId}_${start}_${end}.mp4`;
+    a.download = `brkk_vod_${vodId}_${startSeconds}_${endSeconds}.mp4`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -501,8 +525,11 @@ document.getElementById('download-vod').addEventListener('click', () => {
     return;
   }
 
+  const startSeconds = parseTime(startTime);
+  const endSeconds = parseTime(endTime);
+
   console.log('Iniciando processo de download para VOD:', vodId);
-  downloadVod(vodId, startTime, endTime);
+  downloadVod(vodId, startSeconds, endSeconds);
 });
 
 document.querySelectorAll('.select-vod-btn').forEach(button => {
