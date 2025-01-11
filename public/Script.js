@@ -215,7 +215,7 @@ function adjustPlayerSize() {
 function updateProgressBar(vodId) {
   const progressBar = document.getElementById('download-progress');
   const progressBarFill = progressBar.querySelector('.progress-bar-fill');
-  
+
   function checkProgress() {
     fetch(`/api/downloadprogress/${vodId}`)
       .then(response => response.json())
@@ -226,13 +226,13 @@ function updateProgressBar(vodId) {
           if (percent < 100) {
             setTimeout(checkProgress, 1000);
           } else {
-            progressBar.classList.add('hidden');
+            progressBar.style.display = 'none';
           }
         }
       });
   }
-  
-  progressBar.classList.remove('hidden');
+
+  progressBar.style.display = 'block';
   checkProgress();
 }
 
@@ -241,10 +241,24 @@ async function downloadVod(vodId, start, end) {
     console.log('Iniciando download do VOD:', vodId, 'de', start, 'a', end);
     const vodUrl = `https://www.twitch.tv/videos/${vodId}`;
     
-    const statusElement = document.createElement('div');
-    statusElement.id = 'download-status';
+    let statusElement = document.getElementById('download-status');
+    if (!statusElement) {
+      statusElement = document.createElement('div');
+      statusElement.id = 'download-status';
+      document.body.appendChild(statusElement);
+    }
     statusElement.textContent = 'Iniciando download...';
-    document.body.appendChild(statusElement);
+    statusElement.style.display = 'block';
+
+    let progressBar = document.getElementById('download-progress');
+    if (!progressBar) {
+      progressBar = document.createElement('div');
+      progressBar.id = 'download-progress';
+      progressBar.className = 'progress-bar';
+      progressBar.innerHTML = '<div class="progress-bar-fill"></div>';
+      document.body.appendChild(progressBar);
+    }
+    progressBar.style.display = 'block';
 
     updateProgressBar(vodId);
 
@@ -283,7 +297,10 @@ async function downloadVod(vodId, start, end) {
     window.URL.revokeObjectURL(url);
     
     console.log('Download iniciado no navegador');
-    setTimeout(() => statusElement.remove(), 5000);
+    setTimeout(() => {
+      statusElement.style.display = 'none';
+      progressBar.style.display = 'none';
+    }, 5000);
 
   } catch (error) {
     console.error('Erro detalhado ao baixar VOD:', error);
@@ -292,6 +309,7 @@ async function downloadVod(vodId, start, end) {
     if (statusElement) {
       statusElement.textContent = `Erro: ${error.message}`;
       statusElement.style.color = 'red';
+      statusElement.style.display = 'block';
     }
   }
 }
@@ -487,5 +505,5 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
   });
 });
 
-window.addEventListener("resize", adjustPlayerSize); 
+window.addEventListener("resize", adjustPlayerSize);
 
