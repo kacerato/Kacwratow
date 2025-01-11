@@ -487,5 +487,5 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
   });
 });
 
-window.addEventListener("resize", adjustPlayerSize);
+window.addEventListener("resize", adjustPlayerSize); 
 
