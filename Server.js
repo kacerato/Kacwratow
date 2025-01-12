@@ -62,6 +62,18 @@ app.get('/api/downloadprogress/:vodId', (req, res) => {
   res.json({ progress: downloadProgress[vodId] || 0 });
 });
 
+function parseTime(timeString) {
+  const parts = timeString.split(':').map(Number);
+  return parts[0] * 3600 + parts[1] * 60 + parts[2];
+}
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
 app.post('/api/downloadvod', async (req, res) => {
   const { vodId, vodUrl, start, end } = req.body;
 
@@ -77,42 +89,19 @@ app.post('/api/downloadvod', async (req, res) => {
     const streamUrl = await getStreamUrl(vodUrl);
     console.log('URL do stream obtida:', streamUrl);
 
-    const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
-
-    // Função auxiliar para converter segundos em formato HH:MM:SS
-    function formatTime(seconds) {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    // Função auxiliar para converter HH:MM:SS ou segundos para segundos
-    function parseTime(time) {
-      if (typeof time === 'number') {
-        return time;
-      }
-      if (typeof time === 'string') {
-        const parts = time.split(':').map(Number);
-        if (parts.length === 3) {
-          return parts[0] * 3600 + parts[1] * 60 + parts[2];
-        }
-      }
-      return 0;
-    }
-
     const startSeconds = parseTime(start);
     const endSeconds = parseTime(end);
+    const duration = endSeconds - startSeconds;
+
+    const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
 
     const ffmpegCommand = [
       '-ss', formatTime(startSeconds),
       '-i', streamUrl,
-      '-to', formatTime(endSeconds),
+      '-t', formatTime(duration),
       '-c', 'copy',
       '-avoid_negative_ts', 'make_zero',
-      '-v', 'verbose',
-      '-stats',
-      '-loglevel', 'debug',
+      '-y',
       outputFile
     ];
 
@@ -126,30 +115,16 @@ app.post('/api/downloadvod', async (req, res) => {
       console.error('ffmpeg stderr:', data.toString());
 
       const output = data.toString();
-      const durationMatch = output.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.\d{2}/);
       const timeMatch = output.match(/time=(\d{2}):(\d{2}):(\d{2})\.\d{2}/);
 
-      if (durationMatch && !downloadProgress[vodId]) {
-        const [, durationHours, durationMinutes, durationSeconds] = durationMatch;
-        const totalDuration = (parseInt(durationHours) * 3600 + parseInt(durationMinutes) * 60 + parseInt(durationSeconds));
-        
-        const clipDuration = endSeconds - startSeconds;
-
-        downloadProgress[vodId] = {
-          duration: clipDuration,
-          current: 0
-        };
-      }
-
-      if (timeMatch && downloadProgress[vodId]) {
+      if (timeMatch) {
         const [, hours, minutes, seconds] = timeMatch;
         const currentTime = parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
-        downloadProgress[vodId].current = Math.max(0, currentTime - startSeconds);
+        downloadProgress[vodId] = {
+          duration: duration,
+          current: Math.min(currentTime, duration)
+        };
       }
-    });
-
-    ffmpeg.stdout.on('data', (data) => {
-      console.log('ffmpeg stdout:', data.toString());
     });
 
     ffmpeg.on('close', (code) => {
