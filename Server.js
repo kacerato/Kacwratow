@@ -62,9 +62,22 @@ app.get('/api/downloadprogress/:vodId', (req, res) => {
   res.json({ progress: downloadProgress[vodId] || 0 });
 });
 
-function parseTime(timeString) {
-  const parts = timeString.split(':').map(Number);
-  return parts[0] * 3600 + parts[1] * 60 + parts[2];
+function parseTime(time) {
+  if (typeof time === 'number') {
+    return time;
+  }
+  if (typeof time === 'string') {
+    if (time.includes(':')) {
+      const parts = time.split(':').map(Number);
+      if (parts.length === 3) {
+        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      }
+    } else {
+      return parseInt(time, 10);
+    }
+  }
+  console.error('Formato de tempo inválido:', time);
+  return 0;
 }
 
 function formatTime(seconds) {
@@ -93,7 +106,11 @@ app.post('/api/downloadvod', async (req, res) => {
     const endSeconds = parseTime(end);
     const duration = endSeconds - startSeconds;
 
-    const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${start}_${end}.mp4`);
+    if (duration <= 0) {
+      throw new Error('Duração inválida. O tempo de fim deve ser maior que o tempo de início.');
+    }
+
+    const outputFile = path.join(tempDir, `brkk_vod_${vodId}_${formatTime(startSeconds)}_${formatTime(endSeconds)}.mp4`);
 
     const ffmpegCommand = [
       '-ss', formatTime(startSeconds),
