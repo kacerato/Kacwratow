@@ -13,6 +13,7 @@ let twitchClipsApi;
 
 async function getUserId() {
   try {
+    console.log("Iniciando getUserId");
     const response = await fetch(twitchUserApi, {
       headers: {
         "Client-ID": clientId,
@@ -20,8 +21,14 @@ async function getUserId() {
       },
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
+    console.log("Resposta da API de usuário:", data);
     if (data && data.data && data.data.length > 0) {
+      console.log("ID do usuário obtido:", data.data[0].id);
       return data.data[0].id;
     } else {
       console.error("Usuário não encontrado.");
@@ -35,6 +42,7 @@ async function getUserId() {
 
 async function getLastStreamDate(userId) {
   try {
+    console.log("Iniciando getLastStreamDate para userId:", userId);
     twitchVideosApi = `https://api.twitch.tv/helix/videos?user_id=${userId}&type=archive`;
     const response = await fetch(twitchVideosApi, {
       headers: {
@@ -43,9 +51,16 @@ async function getLastStreamDate(userId) {
       },
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
+    console.log("Resposta da API de vídeos:", data);
     if (data && data.data && data.data.length > 0) {
-      return new Date(data.data[0].created_at);
+      const lastStreamDate = new Date(data.data[0].created_at);
+      console.log("Última data de stream:", lastStreamDate);
+      return lastStreamDate;
     } else {
       console.error("Nenhum vídeo de transmissão encontrado.");
       return null;
@@ -59,11 +74,14 @@ async function getLastStreamDate(userId) {
 function calculateDaysDifference(lastStreamDate) {
   const currentDate = new Date();
   const diffTime = Math.abs(currentDate - lastStreamDate);
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  console.log("Dias desde a última stream:", diffDays);
+  return diffDays;
 }
 
 async function getClips(userId) {
   try {
+    console.log("Iniciando getClips para userId:", userId);
     const now = new Date();
     const last24Hours = new Date(now.setHours(now.getHours() - 24)).toISOString();
     twitchClipsApi = `https://api.twitch.tv/helix/clips?broadcaster_id=${userId}&first=10&started_at=${last24Hours}`;
@@ -75,7 +93,12 @@ async function getClips(userId) {
       },
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
+    console.log("Resposta da API de clips:", data);
     return data.data || [];
   } catch (error) {
     console.error("Erro ao buscar clipes:", error);
@@ -84,14 +107,26 @@ async function getClips(userId) {
 }
 
 async function renderClips() {
+  console.log("Iniciando renderClips");
   const userId = await getUserId();
-  if (!userId) return;
+  if (!userId) {
+    console.error("Não foi possível obter o ID do usuário para renderClips");
+    return;
+  }
 
   const clips = await getClips(userId);
   const clipsContainer = document.getElementById("clips-container");
+  if (!clipsContainer) {
+    console.error("Elemento clips-container não encontrado");
+    return;
+  }
   clipsContainer.innerHTML = "";
 
   const mainPlayer = document.getElementById("main-playerclips");
+  if (!mainPlayer) {
+    console.error("Elemento main-playerclips não encontrado");
+    return;
+  }
   mainPlayer.innerHTML = "";
   const mainPlayerIframe = document.createElement("iframe");
   mainPlayerIframe.setAttribute("frameborder", "0");
@@ -126,6 +161,7 @@ async function renderClips() {
 
     clipsContainer.appendChild(clipElement);
   });
+  console.log("renderClips concluído");
 }
 
 async function getVods(userId) {
@@ -403,6 +439,7 @@ function checkAchievements(daysOffline) {
 
 async function updateStatus() {
   try {
+    console.log("Iniciando updateStatus");
     const userId = await getUserId();
 
     if (!userId) {
@@ -422,6 +459,7 @@ async function updateStatus() {
     }
 
     const streamData = await streamResponse.json();
+    console.log("Dados do stream:", streamData);
     
     const liveStatus = document.getElementById("live-status");
     const statusMessage = document.getElementById("status-message");
@@ -440,6 +478,7 @@ async function updateStatus() {
     }
 
     if (streamData && streamData.data && streamData.data.length > 0) {
+      console.log("Stream está ao vivo");
       liveStatus.classList.remove("hidden");
       statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
       statusMessage.classList.add("status-highlight");
@@ -453,6 +492,7 @@ async function updateStatus() {
       viewersCounter.classList.remove("hidden");
       achievementsContainer.classList.add('hidden');
     } else {
+      console.log("Stream está offline");
       liveStatus.classList.add("hidden");
       twitchEmbed.classList.add("hidden");
       animatedArrow.classList.add("hidden");
@@ -465,19 +505,25 @@ async function updateStatus() {
         const daysOfflineElement = document.getElementById("days-offline");
         if (daysOfflineElement) {
           daysOfflineElement.textContent = daysOffline;
+        } else {
+          console.error("Elemento days-offline não encontrado");
         }
         viewersCounter.classList.add("hidden");
 
         checkAchievements(daysOffline);
+      } else {
+        console.error("Não foi possível obter a data da última stream");
       }
       statusMessage.classList.remove("status-highlight");
     }
+    console.log("updateStatus concluído");
   } catch (error) {
     console.error("Erro ao atualizar o status:", error);
   }
 }
 
 function setupTabs() {
+  console.log("Iniciando setupTabs");
   const statusTab = document.getElementById("status-tab");
   const clipsTab = document.getElementById("clips-tab");
   const vodsTab = document.getElementById("vods-tab");
@@ -487,10 +533,16 @@ function setupTabs() {
   const vodsSection = document.getElementById("vods-section");
   const editorSection = document.getElementById("editor-section");
 
+  if (!statusTab || !clipsTab || !vodsTab || !editorTab || !statusSection || !clipsSection || !vodsSection || !editorSection) {
+    console.error("Um ou mais elementos de tab não foram encontrados");
+    return;
+  }
+
   let clipsLoaded = false;
   let vodsLoaded = false;
 
   statusTab.addEventListener("click", () => {
+    console.log("Status tab clicada");
     statusTab.classList.add("active");
     clipsTab.classList.remove("active");
     vodsTab.classList.remove("active");
@@ -499,77 +551,12 @@ function setupTabs() {
     clipsSection.classList.add("hidden");
     vodsSection.classList.add("hidden");
     editorSection.classList.add("hidden");
+    updateStatus();
   });
 
   clipsTab.addEventListener("click", () => {
+    console.log("Clips tab clicada");
     clipsTab.classList.add("active");
     statusTab.classList.remove("active");
     vodsTab.classList.remove("active");
-    editorTab.classList.remove("active");
-    clipsSection.classList.remove("hidden");
-    statusSection.classList.add("hidden");
-    vodsSection.classList.add("hidden");
-    editorSection.classList.add("hidden");
-
-    if (!clipsLoaded) {
-      renderClips();
-      clipsLoaded = true;
-    }
-  });
-
-  vodsTab.addEventListener("click", () => {
-    vodsTab.classList.add("active");
-    statusTab.classList.remove("active");
-    clipsTab.classList.remove("active");
-    editorTab.classList.remove("active");
-    vodsSection.classList.remove("hidden");
-    statusSection.classList.add("hidden");
-    clipsSection.classList.add("hidden");
-    editorSection.classList.add("hidden");
-
-    if (!vodsLoaded) {
-      renderVods();
-      vodsLoaded = true;
-    }
-  });
-
-  editorTab.addEventListener("click", () => {
-    editorTab.classList.add("active");
-    statusTab.classList.remove("active");
-    clipsTab.classList.remove("active");
-    vodsTab.classList.remove("active");
-    editorSection.classList.remove("hidden");
-    statusSection.classList.add("hidden");
-    clipsSection.classList.add("hidden");
-    vodsSection.classList.add("hidden");
-  });
-}
-
-setupTabs();
-updateStatus();
-
-document.getElementById('download-vod').addEventListener('click', () => {
-  const vodId = document.getElementById('selected-vod-id').value;
-
-  if (!vodId) {
-    alert('Por favor, selecione um VOD para baixar.');
-    return;
-  }
-
-  const startTime = document.getElementById('start-time').value;
-  const endTime = document.getElementById('end-time').value;
-
-  if (!startTime || !endTime || startTime >= endTime) {
-    alert('Por favor, selecione um intervalo de tempo válido.');
-    return;
-  }
-
-  const startSeconds = parseTime(startTime);
-  const endSeconds = parseTime(endTime);
-
-  console.log('Iniciando processo de download para VOD:', vodId);
-  downloadVod(vodId, startSeconds, endSeconds);
-});
-
-document.querySelectorAll('.select-vod-btn').forEach(button => {
-  button.addEventListener('click', function(
+    edi
