@@ -962,3 +962,107 @@ label {
   }
 }
 
+/* Estilos existentes ... */
+
+/* Estilos para o editor de VOD */
+#videoContainer {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#videoPlayer {
+    width: 100%;
+}
+
+.selectionArea {
+    position: absolute;
+    border: 2px solid red;
+    background-color: rgba(255, 0, 0, 0.2);
+}
+
+#previewContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#previewCamera, #previewGame {
+    width: 48%;
+    height: 200px;
+    border: 1px solid #ccc;
+}
+
+#progressBar {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    margin-top: 20px;
+}
+
+#progressFill {
+    height: 100%;
+    width: 0;
+    background-color: #9146ff;
+    transition: width 0.5s;
+}
+
+#editor-section input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#editor-section button {
+    background-color: #9146ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#editor-section button:hover {
+    background-color: #7a3dd6;
+}
+
+#status {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #previewContainer {
+        flex-direction: column;
+    }
+
+    #previewCamera, #previewGame {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Estilos para a aba do editor */
+#editor-tab {
+    background-color: #9146ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#editor-tab:hover {
+    background-color: #7a3dd6;
+}
+
+#editor-tab.active {
+    background-color: #5c16c5;
+}
+
