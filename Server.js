@@ -238,4 +238,3 @@ app.get('/download/:filename', (req, res) => {
 server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
