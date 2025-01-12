@@ -405,56 +405,72 @@ async function updateStatus() {
   try {
     const userId = await getUserId();
 
-    if (userId) {
-      const streamResponse = await fetch(twitchStreamApi, {
-        headers: {
-          "Client-ID": clientId,
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    if (!userId) {
+      console.error("Não foi possível obter o ID do usuário.");
+      return;
+    }
 
-      const streamData = await streamResponse.json();
-      const liveStatus = document.getElementById("live-status");
-      const statusMessage = document.getElementById("status-message");
-      const twitchEmbed = document.querySelector(".twitch-embed");
+    const streamResponse = await fetch(twitchStreamApi, {
+      headers: {
+        "Client-ID": clientId,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-      const animatedArrow = document.querySelector(".animated-arrow");
-      const daysCounter = document.querySelector(".days-counter");
+    if (!streamResponse.ok) {
+      throw new Error(`HTTP error! status: ${streamResponse.status}`);
+    }
 
-      const chatContainer = document.getElementById("chat-container");
-      const viewersCounter = document.querySelector("#viewers-counter");
-      const viewersCount = document.getElementById("viewers-count");
+    const streamData = await streamResponse.json();
+    
+    const liveStatus = document.getElementById("live-status");
+    const statusMessage = document.getElementById("status-message");
+    const twitchEmbed = document.querySelector(".twitch-embed");
+    const animatedArrow = document.querySelector(".animated-arrow");
+    const daysCounter = document.querySelector(".days-counter");
+    const chatContainer = document.getElementById("chat-container");
+    const viewersCounter = document.querySelector("#viewers-counter");
+    const viewersCount = document.getElementById("viewers-count");
+    const achievementsContainer = document.getElementById('achievements-container');
 
-      if (streamData && streamData.data && streamData.data.length > 0) {
-        liveStatus.classList.remove("hidden");
-        statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
-        statusMessage.classList.add("status-highlight");
-        daysCounter.style.display = "none";
-        twitchEmbed.classList.remove("hidden");
-        animatedArrow.classList.remove("hidden");
-        chatContainer.classList.remove("hidden");
+    if (!liveStatus || !statusMessage || !twitchEmbed || !animatedArrow || !daysCounter || 
+        !chatContainer || !viewersCounter || !viewersCount || !achievementsContainer) {
+      console.error("Um ou mais elementos necessários não foram encontrados no DOM.");
+      return;
+    }
 
-        const viewers = streamData.data[0].viewer_count;
-        viewersCount.textContent = viewers;
-        viewersCounter.classList.remove("hidden");
-        document.getElementById('achievements-container').classList.add('hidden');
-      } else {
-        liveStatus.classList.add("hidden");
-        twitchEmbed.classList.add("hidden");
-        animatedArrow.classList.add("hidden");
-        chatContainer.classList.add("hidden");
-        const lastStreamDate = await getLastStreamDate(userId);
-        if (lastStreamDate) {
-          const daysOffline = calculateDaysDifference(lastStreamDate);
-          statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
-          daysCounter.style.display = "flex";
-          document.getElementById("days-offline").textContent = daysOffline;
-          viewersCounter.classList.add("hidden");
+    if (streamData && streamData.data && streamData.data.length > 0) {
+      liveStatus.classList.remove("hidden");
+      statusMessage.textContent = "BRKK perdeu todo o dinheiro no urubu do Pix e resolveu abrir live!";
+      statusMessage.classList.add("status-highlight");
+      daysCounter.style.display = "none";
+      twitchEmbed.classList.remove("hidden");
+      animatedArrow.classList.remove("hidden");
+      chatContainer.classList.remove("hidden");
 
-          checkAchievements(daysOffline);
+      const viewers = streamData.data[0].viewer_count;
+      viewersCount.textContent = viewers;
+      viewersCounter.classList.remove("hidden");
+      achievementsContainer.classList.add('hidden');
+    } else {
+      liveStatus.classList.add("hidden");
+      twitchEmbed.classList.add("hidden");
+      animatedArrow.classList.add("hidden");
+      chatContainer.classList.add("hidden");
+      const lastStreamDate = await getLastStreamDate(userId);
+      if (lastStreamDate) {
+        const daysOffline = calculateDaysDifference(lastStreamDate);
+        statusMessage.textContent = "O tucano está folgando com dinheiro do seu sub a exatos:";
+        daysCounter.style.display = "flex";
+        const daysOfflineElement = document.getElementById("days-offline");
+        if (daysOfflineElement) {
+          daysOfflineElement.textContent = daysOffline;
         }
-        statusMessage.classList.remove("status-highlight");
+        viewersCounter.classList.add("hidden");
+
+        checkAchievements(daysOffline);
       }
+      statusMessage.classList.remove("status-highlight");
     }
   } catch (error) {
     console.error("Erro ao atualizar o status:", error);
@@ -465,9 +481,11 @@ function setupTabs() {
   const statusTab = document.getElementById("status-tab");
   const clipsTab = document.getElementById("clips-tab");
   const vodsTab = document.getElementById("vods-tab");
+  const editorTab = document.getElementById("editor-tab");
   const statusSection = document.getElementById("status-section");
   const clipsSection = document.getElementById("clips-section");
   const vodsSection = document.getElementById("vods-section");
+  const editorSection = document.getElementById("editor-section");
 
   let clipsLoaded = false;
   let vodsLoaded = false;
@@ -476,18 +494,22 @@ function setupTabs() {
     statusTab.classList.add("active");
     clipsTab.classList.remove("active");
     vodsTab.classList.remove("active");
+    editorTab.classList.remove("active");
     statusSection.classList.remove("hidden");
     clipsSection.classList.add("hidden");
     vodsSection.classList.add("hidden");
+    editorSection.classList.add("hidden");
   });
 
   clipsTab.addEventListener("click", () => {
     clipsTab.classList.add("active");
     statusTab.classList.remove("active");
     vodsTab.classList.remove("active");
+    editorTab.classList.remove("active");
     clipsSection.classList.remove("hidden");
     statusSection.classList.add("hidden");
     vodsSection.classList.add("hidden");
+    editorSection.classList.add("hidden");
 
     if (!clipsLoaded) {
       renderClips();
@@ -499,14 +521,27 @@ function setupTabs() {
     vodsTab.classList.add("active");
     statusTab.classList.remove("active");
     clipsTab.classList.remove("active");
+    editorTab.classList.remove("active");
     vodsSection.classList.remove("hidden");
     statusSection.classList.add("hidden");
     clipsSection.classList.add("hidden");
+    editorSection.classList.add("hidden");
 
     if (!vodsLoaded) {
       renderVods();
       vodsLoaded = true;
     }
+  });
+
+  editorTab.addEventListener("click", () => {
+    editorTab.classList.add("active");
+    statusTab.classList.remove("active");
+    clipsTab.classList.remove("active");
+    vodsTab.classList.remove("active");
+    editorSection.classList.remove("hidden");
+    statusSection.classList.add("hidden");
+    clipsSection.classList.add("hidden");
+    vodsSection.classList.add("hidden");
   });
 }
 
@@ -537,42 +572,4 @@ document.getElementById('download-vod').addEventListener('click', () => {
 });
 
 document.querySelectorAll('.select-vod-btn').forEach(button => {
-  button.addEventListener('click', function() {
-    document.querySelectorAll('.vod').forEach(vod => vod.classList.remove('active'));
-    this.closest('.vod').classList.add('active');
-  });
-});
-
-window.addEventListener("resize", adjustPlayerSize);
-
-function loadVideo() {
-  const vodUrl = document.getElementById('vodUrl').value;
-  const videoPlayer = document.getElementById('videoPlayer');
-  videoPlayer.src = vodUrl;
-}
-
-function startSelection(event, selectionType) {
-  const videoContainer = document.getElementById('videoContainer');
-  const rect = videoContainer.getBoundingClientRect();
-  const startX = event.clientX - rect.left;
-  const startY = event.clientY - rect.top;
-
-  function onMouseMove(e) {
-    const endX = e.clientX - rect.left;
-    const endY = e.clientY - rect.top;
-    const width = Math.abs(endX - startX);
-    const height = Math.abs(endY - startY);
-    const left = Math.min(startX, endX);
-    const top = Math.min(startY, endY);
-
-    const selectionElement = document.getElementById(`${selectionType}Selection`);
-    selectionElement.style.left = `${left}px`;
-    selectionElement.style.top = `${top}px`;
-    selectionElement.style.width = `${width}px`;
-    selectionElement.style.height = `${height}px`;
-
-    updatePreview(selectionType, left, top, width, height);
-  }
-
-  function onMouseUp() {
-    document.removeEventListener('mouse
+  button.addEventListener('click', function(
