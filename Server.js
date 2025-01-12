@@ -112,7 +112,7 @@ app.post('/api/editvod', async (req, res) => {
     await videoQueue.add(jobId, { vodId, vodUrl, start, end, cameraArea, gameArea });
     res.json({ jobId, message: 'Edição de vídeo iniciada. Você receberá notificações sobre o progresso.' });
   } catch (error) {
-    console.error('Erro ao adicionar trabalho à fila:', error);
+    console.error('Erro ao adicionar trabalho �� fila:', error);
     res.status(500).json({ error: 'Erro ao iniciar a edição de vídeo' });
   }
 });
@@ -238,3 +238,4 @@ app.get('/download/:filename', (req, res) => {
 server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
