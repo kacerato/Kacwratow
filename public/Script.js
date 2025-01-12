@@ -1,3 +1,7 @@
+let currentJobId = null;
+let cameraArea = null;
+let gameArea = null;
+
 const clientId = "v2h2uedgpuw2fz35wtn942e9vsf2c9";
 const accessToken = "st6jpeqk6jidreb6cnlw08zn5fwjbk";
 const username = "brkk";
@@ -397,6 +401,8 @@ function checkAchievements(daysOffline) {
   }
 }
 
+
+
 async function updateStatus() {
   try {
     const userId = await getUserId();
@@ -541,3 +547,34 @@ document.querySelectorAll('.select-vod-btn').forEach(button => {
 
 window.addEventListener("resize", adjustPlayerSize);
 
+function loadVideo() {
+  const vodUrl = document.getElementById('vodUrl').value;
+  const videoPlayer = document.getElementById('videoPlayer');
+  videoPlayer.src = vodUrl;
+}
+
+function startSelection(event, selectionType) {
+  const videoContainer = document.getElementById('videoContainer');
+  const rect = videoContainer.getBoundingClientRect();
+  const startX = event.clientX - rect.left;
+  const startY = event.clientY - rect.top;
+
+  function onMouseMove(e) {
+    const endX = e.clientX - rect.left;
+    const endY = e.clientY - rect.top;
+    const width = Math.abs(endX - startX);
+    const height = Math.abs(endY - startY);
+    const left = Math.min(startX, endX);
+    const top = Math.min(startY, endY);
+
+    const selectionElement = document.getElementById(`${selectionType}Selection`);
+    selectionElement.style.left = `${left}px`;
+    selectionElement.style.top = `${top}px`;
+    selectionElement.style.width = `${width}px`;
+    selectionElement.style.height = `${height}px`;
+
+    updatePreview(selectionType, left, top, width, height);
+  }
+
+  function onMouseUp() {
+    document.removeEventListener('mou
