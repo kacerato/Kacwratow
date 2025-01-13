@@ -793,7 +793,7 @@ label {
 }
 
 /* Adicionar os seguintes estilos para o botão de seleção de VOD */
-.select-vod-download-btn {
+.select-vod-btn {
   background-color: #9146ff;
   color: white;
   border: none;
@@ -805,16 +805,16 @@ label {
   margin-top: 10px;
 }
 
-.select-vod-downlaod-btn:hover {
+.select-vod-btn:hover {
   background-color: #772ce8;
   transform: translateY(-2px);
 }
 
-.select-vod-download-btn:active {
+.select-vod-btn:active {
   transform: translateY(0);
 }
 
-.vod.active .select-vod-download-btn {
+.vod.active .select-vod-btn {
   background-color: #5c16c5;
   box-shadow: 0 0 0 2px white, 0 0 0 4px #9146ff;
 }
@@ -886,7 +886,7 @@ label {
   font-weight: bold;
 }
 
-.select-vod-download-btn, .download-btn {
+.select-vod-btn, .download-btn {
   background-color: #9146ff;
   color: white;
   border: none;
@@ -904,18 +904,18 @@ label {
   margin-top: 15px;
 }
 
-.select-vod-download-btn:hover, .download-btn:hover {
+.select-vod-btn:hover, .download-btn:hover {
   background-color: #7a3dd6;
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(145, 70, 255, 0.3);
 }
 
-.select-vod-download-btn:active, .download-btn:active {
+.select-vod-btn:active, .download-btn:active {
   transform: translateY(-1px);
   box-shadow: 0 3px 6px rgba(145, 70, 255, 0.2);
 }
 
-.select-vod-download-btn::before, .download-btn::before {
+.select-vod-btn::before, .download-btn::before {
   content: '🎬';
   margin-right: 8px;
   font-size: 20px;
@@ -937,7 +937,7 @@ label {
   }
 }
 
-.vod.active .select-vod-download-btn {
+.vod.active .select-vod-btn {
   animation: pulse 1.5s infinite;
 }
 
@@ -957,112 +957,8 @@ label {
     width: 100%;
   }
 
-  .select-vod-download-btn, .download-btn {
+  .select-vod-btn, .download-btn {
     width: 100%;
   }
-}
-
-/* Estilos existentes ... */
-
-/* Estilos para o editor de VOD */
-#videoContainer {
-    position: relative;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-#videoPlayer {
-    width: 100%;
-}
-
-.selectionArea {
-    position: absolute;
-    border: 2px solid red;
-    background-color: rgba(255, 0, 0, 0.2);
-}
-
-#previewContainer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
-
-#previewCamera, #previewGame {
-    width: 48%;
-    height: 200px;
-    border: 1px solid #ccc;
-}
-
-#progressBar {
-    width: 100%;
-    height: 20px;
-    background-color: #f0f0f0;
-    margin-top: 20px;
-}
-
-#progressFill {
-    height: 100%;
-    width: 0;
-    background-color: #9146ff;
-    transition: width 0.5s;
-}
-
-#editor-section input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#editor-section button {
-    background-color: #9146ff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-#editor-section button:hover {
-    background-color: #7a3dd6;
-}
-
-#status {
-    margin-top: 20px;
-    font-weight: bold;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    #previewContainer {
-        flex-direction: column;
-    }
-
-    #previewCamera, #previewGame {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-}
-
-/* Estilos para a aba do editor */
-#editor-tab {
-    background-color: #9146ff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-#editor-tab:hover {
-    background-color: #7a3dd6;
-}
-
-#editor-tab.active {
-    background-color: #5c16c5;
 }
 
